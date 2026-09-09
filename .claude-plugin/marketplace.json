@@ -1,0 +1,25 @@
+{
+  "name": "claude-code-dieciocho",
+  "owner": {
+    "name": "GonzalitoCaro"
+  },
+  "plugins": [
+    {
+      "name": "dieciocho",
+      "source": "./",
+      "description": "Viste de huaso al bichito del banner de Claude Code para el 18 de septiembre",
+      "author": {
+        "name": "GonzalitoCaro"
+      },
+      "repository": "https://github.com/GonzalitoCaro/claude-code-dieciocho",
+      "license": "MIT",
+      "keywords": [
+        "chile",
+        "dieciocho",
+        "fiestas-patrias",
+        "pixel-art",
+        "terminal"
+      ]
+    }
+  ]
+}

@@ -1,87 +1,71 @@
 # dieciocho
 
-Una skill de [Claude Code](https://claude.com/claude-code) que viste de huaso al bichito
-del banner y pone el terminal en modo 18 de septiembre.
+Un plugin de [Claude Code](https://claude.com/claude-code) que viste de huaso al bichito
+del banner para el 18 de septiembre.
+
+Escribes `/dieciocho` y el banner se transforma:
 
 ```
-/dieciocho
+   ██████     Claude Code v2.1.266
+ ██████████   Opus 5 (1M context) with high effort
+ ██████████   C:\Users\tu-nombre
+  ▀▀▀▀▀▀▀▀
+   ██  ██     ★ faltan 9 días pal 18
 ```
 
-Dibuja uno de tres monitos al azar — chupalla negra con cinta blanca, poncho, volantín — con
-las líneas del banner al lado y la cuenta regresiva al 18:
+Sale uno de tres monitos al azar —huaso, bandera o volantín— y la cuenta regresiva se
+calcula sola. Pasado el 19 empieza a contar para el próximo año, así que sirve todo el
+tiempo sin tocar nada.
 
-```
-▀▀▀▀▀      Claude Code v2.1.266
-▀▀▀▀▀▀▀    Opus 5 (1M context) with high effort
-▀▀▀▀▀▀▀    ~/mi-proyecto
- ▀▀▀ ▀▀    ███ faltan 9 días pal 18
-```
-
-Y opcionalmente cambia los verbos del spinner por chilenismos: en vez de
-*Bloviating…* te sale **Rayueleando…**, **Anticucheando…**, **Terremoteando…**
+De yapa, cambia los verbos del spinner por chilenismos: en vez de *Bloviating…* te sale
+**Rayueleando…**, **Anticucheando…**, **Terremoteando…**
 
 ## Instalar
 
-Lo más corto es pedírselo a Claude Code. Pega esto en la terminal:
-
 ```
-Instala la skill https://github.com/GonzalitoCaro/claude-code-dieciocho : clónala en
-~/.claude/skills/dieciocho, lee su README.md y deja instalado el hook UserPromptSubmit
-que dice ahí, sin borrar los hooks que ya tengo.
+/plugin marketplace add GonzalitoCaro/claude-code-dieciocho
+/plugin install dieciocho@claude-code-dieciocho
 ```
 
-Claude clona, agrega una línea a tu `~/.claude/settings.json` (te va a pedir permiso) y
-listo: en la terminal siguiente, `/dieciocho` dibuja el banner.
+Listo. Escribe `/dieciocho`.
 
-### A mano
+Funciona en Windows, macOS y Linux. En Windows necesitas tener Git instalado, porque
+Claude Code corre los hooks en el bash de Git.
 
-Son dos pasos. El primero da el comando `/dieciocho`; el segundo es el que dibuja.
+### Sin plugin, a mano
 
-**1. Clonar en la carpeta de skills.**
+Si prefieres solo la skill, sin el hook que transforma el banner:
 
-Windows (PowerShell):
-```powershell
-git clone https://github.com/GonzalitoCaro/claude-code-dieciocho "$HOME\.claude\skills\dieciocho"
-```
-
-macOS / Linux:
 ```bash
-git clone https://github.com/GonzalitoCaro/claude-code-dieciocho ~/.claude/skills/dieciocho
+git clone https://github.com/GonzalitoCaro/claude-code-dieciocho /tmp/dieciocho
+cp -r /tmp/dieciocho/skills/dieciocho ~/.claude/skills/dieciocho
 ```
 
-**2. Agregar el hook** a `~/.claude/settings.json`. Es la misma línea en Windows, macOS y
-Linux, porque en Windows los hooks corren dentro del bash de Git. Si ya tienes `hooks`
-en ese archivo, suma esta entrada a las que hay:
+Así `/dieciocho` dibuja igual, pero abajo de la conversación en vez de arriba.
 
-```json
-"hooks": {
-  "UserPromptSubmit": [
-    { "hooks": [ { "type": "command",
-        "command": "bash \"$HOME/.claude/skills/dieciocho/gate-dieciocho.sh\"",
-        "timeout": 20 } ] }
-  ]
-}
-```
+## Qué instala y qué hace
 
-La ruta va con slash normal y entre comillas, y con `$HOME`: bash se come los
-backslashes, y `$USERPROFILE` acá no sirve porque quien lee la ruta es bash.
+Vale la pena leer esto antes, porque el plugin trae un **hook**, y un hook es código que
+corre en tu máquina.
 
-Sin el paso 2 la skill igual funciona, pero el dibujo sale colapsado en "Ran 1 shell
-command" y hay que expandirlo. Con el hook aparece solo, arriba de la respuesta.
+| | |
+|---|---|
+| **Cuándo corre** | En cada mensaje que escribes |
+| **Qué hace** | Busca la palabra "dieciocho" en tu prompt. Si no está, se apaga y no hace nada más |
+| **Qué lee** | Tu prompt, y de tu `settings.json` solo el modelo y el nivel de esfuerzo, para que el banner diga lo mismo que el de verdad |
+| **Qué escribe** | Nada |
+| **Qué manda por red** | Nada. No hay una sola llamada de red en el código |
+| **Cuánto demora** | ~120 ms cuando no calza. Por eso el filtro es un `grep` y no algo más pesado |
 
-Qué necesita: Claude Code, y en Windows el Git for Windows que Claude Code ya exige.
-Nada más: los renderizadores son un `.ps1` y un `.sh` pelados. El hook corre en cada
-mensaje, pero filtra con `grep` antes de levantar nada (unos 120 ms en Windows, nada en
-Mac y Linux). Claude Code le antepone la etiqueta `UserPromptSubmit says:` y esa no se
-puede sacar.
+Son unas 100 líneas de shell, en `skills/dieciocho/`. Están comentadas y se leen en cinco
+minutos: si vas a dejar que algo corra en cada mensaje que escribes, revísalo primero.
 
-Para actualizar, `git pull` en esa misma carpeta. Para desinstalar, bórrala y saca el
-bloque `UserPromptSubmit` del `settings.json`.
+Para desinstalar: `/plugin uninstall dieciocho@claude-code-dieciocho`.
 
 ## Los tres monitos
 
-Todos respetan la grilla del bicho original — 17 columnas, ojos en las columnas 4 y 12,
-cuatro patitas — y le agregan sombrero y manta.
+Todos respetan la grilla del bicho original —17 columnas, ojos en las columnas 4 y 12,
+cuatro patitas— y le agregan sombrero y manta.
 
 | Sprite | Qué es |
 |---|---|
@@ -89,50 +73,34 @@ cuatro patitas — y le agregan sombrero y manta.
 | `bandera` | Chupalla negra y poncho con la bandera: cantón azul con estrella, blanco al lado y franja roja abajo |
 | `volantin` | Chupalla de paja, con un volantín arriba a la derecha y el hilo bajando al poncho |
 
-Variantes de sombrero: `huaso-paja` y `bandera-paja` con chupalla de paja, y `volantin-negro`
-con la chupalla negra.
-
-Para dibujar uno específico, sin pasar por la skill:
-
-```powershell
-& "$HOME\.claude\skills\dieciocho\render-monito.ps1" -Sprite volantin
-& "$HOME\.claude\skills\dieciocho\render-monito.ps1" -Banner -Modelo "Opus 5"
-```
-```bash
-bash ~/.claude/skills/dieciocho/render-monito.sh volantin
-bash ~/.claude/skills/dieciocho/render-monito.sh --banner --modelo "Opus 5"
-```
-
-La versión y la ruta las saca el script solo; la línea del modelo se la pasa Claude al
-invocar la skill, porque el script no tiene cómo saber el nombre de la sesión.
+Variantes de sombrero: `huaso-paja`, `bandera-paja` y `volantin-negro`. Para pedir uno en
+particular, dile a Claude "dame el del volantín".
 
 ## Cómo está dibujado
 
-Una celda de terminal es el doble de alta que de ancha, así que un píxel cuadrado no se
-hace con `█` sino con `▀`: color de texto arriba, color de fondo abajo. Salen **dos filas
-de arte por línea de terminal**, y por eso los sprites tienen 8 filas — cuatro líneas
-exactas, sin media línea desperdiciada.
+**Un píxel por celda de terminal**, con `█`. Una celda es el doble de alta que de ancha,
+así que los píxeles son rectángulos parados — y esa es justamente la geometría del bicho
+original. Con medio bloque (`▀`) los píxeles salen cuadrados y el monito queda achatado a
+la mitad al lado del original.
 
-Los sprites se escriben como texto plano, una letra por color:
+Los sprites son texto plano, una letra por color:
 
 ```
 .....nnnnnnn.....      c  coral (el color original del bicho)
-.....wwwwwww.....      p  paja
-nnnnnnnnnnnnnnnnn      a  azul
-..ccccccccccccc..      r  rojo
-..cc.ccccccc.cc..      b  lana
-aaaaaaaaaaaaaaaaa      h  hilo del volantín
-..arrrrrrrrrrra..      n  negro de la chupalla
-....c.c...c.c....      w  cinta blanca
-                       .  fondo
+nnnnwwwwwwwwwnnnn      p  paja          n  negro de la chupalla
+..ccccccccccccc..      a  azul          w  cinta blanca
+..cc.ccccccc.cc..      r  rojo          h  hilo del volantín
+aaaaaaaaaaaaaaaaa      b  lana          .  fondo
+..arrrrrrrrrrra..
+....c.c...c.c....
 ```
 
-Si quieres agregar uno, edítalo en los dos renderizadores con las mismas letras.
+Si agregas uno, edítalo en los dos renderizadores (`.ps1` y `.sh`) con las mismas letras.
 
-## Los verbos
+## Los verbos del spinner
 
-Están en `verbos.json`. Son 28 y reemplazan a los de fábrica. Para prenderlos, copia ese
-objeto como la clave `spinnerVerbs` de tu `~/.claude/settings.json`:
+Están en `skills/dieciocho/verbos.json`. Son 28 y no se activan solos: copia ese objeto
+como la clave `spinnerVerbs` de tu `~/.claude/settings.json`.
 
 ```json
 "spinnerVerbs": { "mode": "replace", "verbs": ["Dieciocheando", "Cuequeando", "..."] }
@@ -141,69 +109,22 @@ objeto como la clave `spinnerVerbs` de tu `~/.claude/settings.json`:
 `replace` deja solo los chilenos; `append` los mezcla con los originales. Se aplican al
 toque, sin reiniciar. Para apagarlos, saca la clave.
 
-## Que salga solo, al arrancar
-
-El dibujo del banner no se puede reemplazar, pero un hook `SessionStart` puede
-pintar debajo: Claude Code muestra al usuario el campo `systemMessage` de la
-salida JSON de un hook, y ese es el unico canal que dibuja en pantalla al
-arrancar. El monito queda justo bajo la ruta, con la cuenta regresiva.
-
-Agrega esto a `~/.claude/settings.json`.
-
-**Windows:**
-```json
-"hooks": {
-  "SessionStart": [
-    { "hooks": [ { "type": "command",
-        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$USERPROFILE/.claude/skills/dieciocho/sessionstart-monito.ps1\"",
-        "timeout": 20 } ] }
-  ]
-}
-```
-
-**macOS / Linux:**
-```json
-"hooks": {
-  "SessionStart": [
-    { "hooks": [ { "type": "command",
-        "command": "bash \"$HOME/.claude/skills/dieciocho/sessionstart-monito.sh\"",
-        "timeout": 20 } ] }
-  ]
-}
-```
-
-**Nunca pongas backslashes en el comando de un hook.** En Windows los hooks igual
-corren dentro del bash de Git, y bash se come el backslash como escape: una ruta
-`C:\Users\...` le llega al comando como `C:Users...` y el arranque queda con un
-`command not found` en pantalla. Por eso la ruta va con slash normal y entre
-comillas. Y por eso va `$USERPROFILE` y no `$HOME`: en el bash de Git `$HOME` es
-`/c/Users/...`, que PowerShell no sabe leer.
-
-Para sacarlo, borra el bloque `SessionStart`.
-
 ## Lo que no se puede
 
-El bicho del banner de inicio **no se puede reemplazar**: está hardcodeado en el binario
-de Claude Code. Lo más cerca que se llega es el hook de arriba, que dibuja el huaso
-*debajo* del banner original. En el binario, `BannerConfig` resulta ser el banner corporativo de texto
-—color de fondo, link, 200 caracteres— y no tiene nada que ver con el sprite.
+El bicho del banner de arranque **no se puede reemplazar**: está hardcodeado en el binario
+de Claude Code. Por eso el plugin no lo reemplaza, lo **tapa**: dibuja el suyo y empuja el
+original fuera de la pantalla con líneas en blanco.
 
-Así que el monito no se reemplaza, se dibuja: la skill lo pinta cuando la invocas, y la
-statusline es el único lugar donde puede quedar fijo.
+Quedan ~6 columnas de sangría a la izquierda que tampoco se pueden sacar, porque Claude
+Code renderiza los mensajes de hook indentados. En `ESTADO.md` está la lista completa de
+lo que se intentó y por qué no se puede, para que nadie lo reintente.
 
-## Detalles que costaron una vuelta
+## Ajustes
 
-- **Windows**: PowerShell 5.1 escribe en la codepage del sistema y convierte los bloques
-  en `?`. El script fuerza UTF-8 con `[Console]::OutputEncoding`.
-- **Los glifos se generan por código** (`[char]0xNNNN`, `printf '\xe2\x96\x80'`) para que
-  los scripts queden ASCII puros y no dependan del encoding con que se lean.
-- **macOS trae bash 3.2**: nada de `mapfile` ni arrays asociativos. Por eso el color va en
-  un `case`.
-- **Los hooks en Windows corren en el bash de Git**, no en PowerShell: si el
-  comando trae backslashes, bash se los come y sale
-  `C:PROGRA~1Gitbinbash.exe: command not found`. Rutas con slash y entre comillas.
-- **Color de 24 bits** (`ESC[38;2;R;G;Bm`): Windows Terminal e iTerm2 lo soportan; la
-  consola vieja de Windows no, y ahí se ve plano.
+Sin tocar código, con variables de entorno:
+
+- `DIECIOCHO_EMPUJE` (40): líneas en blanco arriba, las que empujan el banner original.
+- `DIECIOCHO_EMPUJE_ABAJO` (14): líneas abajo, las que suben el dibujo.
 
 ## Licencia
 

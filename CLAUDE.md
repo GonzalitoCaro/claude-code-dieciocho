@@ -6,15 +6,18 @@ Se edita desde el computador y desde el celular con Claude Code web.
 
 ## Qué hay
 
+Es un plugin de Claude Code: `.claude-plugin/` trae los manifiestos,
+`hooks/hooks.json` registra el hook y la skill vive en `skills/dieciocho/`.
+
 | Archivo | Qué es |
 |---|---|
-| `SKILL.md` | La skill. Es lo que lee Claude Code cuando el usuario escribe `/dieciocho` |
+| `skills/dieciocho/SKILL.md` | La skill. Es lo que lee Claude Code cuando el usuario escribe `/dieciocho` |
 | `README.md` | Instalación y explicación para quien clone el repo |
-| `render-monito.ps1` y `render-monito.sh` | Los dos renderizadores, uno por plataforma. Tienen que quedar iguales |
-| `sessionstart-monito.ps1` y `sessionstart-monito.sh` | Hook `SessionStart` que pinta el monito al arrancar |
-| `prompt-monito.ps1` y `prompt-monito.sh` | Hook `UserPromptSubmit`: dibuja el banner cuando el usuario escribe `/dieciocho` |
-| `gate-dieciocho.cmd` y `gate-dieciocho.sh` | Filtro barato delante del hook anterior. Corre en cada prompt, así que decide con `findstr`/`grep` antes de levantar PowerShell |
-| `verbos.json` | Los 28 verbos chilenos del spinner |
+| `skills/dieciocho/render-monito.ps1` y `render-monito.sh` | Los dos renderizadores, uno por plataforma. Tienen que quedar iguales |
+| `skills/dieciocho/sessionstart-monito.ps1` y `sessionstart-monito.sh` | Hook `SessionStart` que pinta el monito al arrancar |
+| `skills/dieciocho/prompt-monito.ps1` y `prompt-monito.sh` | Hook `UserPromptSubmit`: dibuja el banner cuando el usuario escribe `/dieciocho` |
+| `skills/dieciocho/gate-dieciocho.cmd` y `gate-dieciocho.sh` | Filtro barato delante del hook anterior. Corre en cada prompt, así que decide con `findstr`/`grep` antes de levantar PowerShell |
+| `skills/dieciocho/verbos.json` | Los 28 verbos chilenos del spinner |
 | `ESTADO.md` | Dónde quedó el trabajo, qué está probado y qué callejones ya se recorrieron. **Leerlo antes de retomar** |
 
 ## Reglas del código
@@ -33,11 +36,11 @@ Se edita desde el computador y desde el celular con Claude Code web.
 En Linux o macOS, y también en las sesiones en la nube de Claude Code:
 
 ```bash
-bash render-monito.sh --banner --modelo "Opus 5"
-bash render-monito.sh volantin --sangria 2
-bash sessionstart-monito.sh
-echo '{"prompt":"/dieciocho"}' | bash gate-dieciocho.sh   # debe salir JSON
-echo '{"prompt":"hola"}'       | bash gate-dieciocho.sh   # no debe salir nada
+bash skills/dieciocho/render-monito.sh --banner --modelo "Opus 5"
+bash skills/dieciocho/render-monito.sh volantin --sangria 2
+bash skills/dieciocho/sessionstart-monito.sh
+echo '{"prompt":"/dieciocho"}' | bash skills/dieciocho/gate-dieciocho.sh   # debe salir JSON
+echo '{"prompt":"hola"}'       | bash skills/dieciocho/gate-dieciocho.sh   # no debe salir nada
 ```
 
 La salida de los hooks tiene que ser JSON válido. Verificar siempre leyendo

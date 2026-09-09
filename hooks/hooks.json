@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/skills/dieciocho/gate-dieciocho.sh\"",
+            "timeout": 20
+          }
+        ]
+      }
+    ]
+  }
+}
