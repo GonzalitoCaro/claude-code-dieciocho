@@ -172,7 +172,13 @@ if [ "$BANNER" -eq 1 ] || [ "$CUENTA" -eq 1 ]; then
     if [ -n "$MODELO" ]; then
       TEXTOS[$F]="${C_TENUE}${MODELO}${RESET}"; F=$(( F + 1 ))
     fi
-    TEXTOS[$F]="${C_TENUE}$(pwd)${RESET}"
+    # En el bash de Git, pwd da /c/Users/... pero el banner de verdad muestra
+    # la forma de Windows. pwd -W la da; despues cambiamos las barras.
+    RUTA=$(pwd -W 2>/dev/null || pwd)
+    case "$RUTA" in
+      [A-Za-z]:/*) RUTA=$(printf '%s' "$RUTA" | tr '/' '\\') ;;
+    esac
+    TEXTOS[$F]="${C_TENUE}${RUTA}${RESET}"
     FILA_CUENTA=$(( F + 2 ))
   fi
 

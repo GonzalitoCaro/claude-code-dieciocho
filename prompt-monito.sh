@@ -24,11 +24,45 @@ if [ -f "$CFG" ]; then
 fi
 
 if [ -n "$MODELO" ]; then
-  ARTE=$(bash "$BASE/render-monito.sh" --banner --modelo "$MODELO" 2>/dev/null) || exit 0
+  ARTE=$(bash "$BASE/render-monito.sh" --banner --sangria 0 --modelo "$MODELO" 2>/dev/null) || exit 0
 else
-  ARTE=$(bash "$BASE/render-monito.sh" --banner 2>/dev/null) || exit 0
+  ARTE=$(bash "$BASE/render-monito.sh" --banner --sangria 0 2>/dev/null) || exit 0
 fi
 [ -z "$ARTE" ] && exit 0
+
+# Simular que el banner original se borro: no se puede tocar, pero si se puede
+# empujar fuera de la vista. Con suficientes lineas en blanco arriba, el banner
+# de verdad sale por el techo de la pantalla y abajo queda solo el dieciochero.
+# DIECIOCHO_EMPUJE=0 lo desactiva.
+EMPUJE="${DIECIOCHO_EMPUJE:-40}"
+if [ "$EMPUJE" -gt 0 ] 2>/dev/null; then
+  # OJO: no usar $(...) para armar el relleno. La sustitucion de comandos borra
+  # todos los saltos de linea del final y el relleno queda vacio. Se acumula
+  # dentro de la variable, con el salto literal adentro de las comillas.
+  RELLENO=""
+  i=0
+  while [ $i -lt "$EMPUJE" ]; do
+    RELLENO="$RELLENO
+"
+    i=$(( i + 1 ))
+  done
+  ARTE="${RELLENO}${ARTE}"
+fi
+
+# Subir el banner: la vista queda anclada abajo, asi que lo que lo empuja hacia
+# arriba es el relleno de ABAJO, no el de arriba. DIECIOCHO_EMPUJE_ABAJO=0 lo deja
+# a media pantalla como antes.
+# Las lineas de abajo llevan un espacio, no van vacias: awk descarta el ultimo
+# registro si el texto termina en saltos de linea pelados.
+ABAJO="${DIECIOCHO_EMPUJE_ABAJO:-14}"
+if [ "$ABAJO" -gt 0 ] 2>/dev/null; then
+  i=0
+  while [ $i -lt "$ABAJO" ]; do
+    ARTE="$ARTE
+ "
+    i=$(( i + 1 ))
+  done
+fi
 
 # Mismo escapado que sessionstart-monito.sh, pero aca SI puede venir la ruta
 # del proyecto, asi que tambien escapamos comillas y backslashes.

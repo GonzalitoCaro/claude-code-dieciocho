@@ -18,7 +18,10 @@ dice "El hook dieciocho ya dibujo el banner en pantalla".
 
 **Si ese aviso está: no corras ningún comando.** El monito ya salió. Si además
 lo dibujas tú, sale "Ran 1 shell command" y el usuario ve el ruido en vez del
-monito. Responde una línea corta y nada más.
+monito. Responde una línea corta y nada más, **sin emoji**. La bandera chilena se forma
+con dos indicadores regionales y Windows Terminal no los sabe componer: en vez
+de la bandera queda una `c` suelta al medio de la frase. Lo mismo con el
+volantín y compañía. Si quieres un adorno, usa la estrella `★`, que sí se ve.
 
 **Si el aviso no está, el hook no está instalado.** Pasa en cualquier
 computador donde la skill se acaba de clonar. Ahí sí dibujas tú con el
