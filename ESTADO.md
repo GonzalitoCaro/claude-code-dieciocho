@@ -63,5 +63,19 @@ echo '{"prompt":"hola"}'       | bash skills/dieciocho/gate-dieciocho.sh   # no 
 
 ## Lo que se puede afinar sin tocar código
 
-- `DIECIOCHO_EMPUJE` (40): líneas en blanco arriba, las que empujan el banner original.
-- `DIECIOCHO_EMPUJE_ABAJO` (14): líneas abajo, las que suben el dibujo.
+Los rellenos se calculan a partir de las filas de la terminal: arriba tantas líneas como
+filas, abajo las filas menos 17 (7 del arte y unas 10 de la zona del prompt). Con un
+número fijo el huaso quedaba a media altura en una ventana chica y pegado arriba con un
+hueco en una maximizada.
+
+- `DIECIOCHO_FILAS`: fuerza la altura medida. Sirve para probar (`DIECIOCHO_FILAS=24`) y
+  como salida si la medición falla.
+- `DIECIOCHO_EMPUJE`: líneas en blanco arriba, las que empujan el banner original.
+- `DIECIOCHO_EMPUJE_ABAJO`: líneas abajo, las que suben el dibujo.
+
+Sin medida, quedan los fijos de antes: 40 arriba y 14 abajo.
+
+**Cómo se mide.** Un hook no tiene tty. En Windows, `$Host.UI.RawUI.WindowSize.Height`
+desde PowerShell sí responde (`[Console]::WindowHeight` no: el handle de salida está
+redirigido y tira "Controlador no válido"). En macOS y Linux, `stty size </dev/tty`. No
+usar `tput lines`: sin tty inventa 24 y parece un valor real.

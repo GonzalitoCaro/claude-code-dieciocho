@@ -52,7 +52,7 @@ corre en tu máquina.
 |---|---|
 | **Cuándo corre** | En cada mensaje que escribes |
 | **Qué hace** | Busca la palabra "dieciocho" en tu prompt. Si no está, se apaga y no hace nada más |
-| **Qué lee** | Tu prompt, y de tu `settings.json` solo el modelo y el nivel de esfuerzo, para que el banner diga lo mismo que el de verdad |
+| **Qué lee** | Tu prompt, la altura de la ventana de la terminal, y de tu `settings.json` solo el modelo y el nivel de esfuerzo, para que el banner diga lo mismo que el de verdad |
 | **Qué escribe** | Nada |
 | **Qué manda por red** | Nada. No hay una sola llamada de red en el código |
 | **Cuánto demora** | ~120 ms cuando no calza. Por eso el filtro es un `grep` y no algo más pesado |
@@ -121,10 +121,17 @@ lo que se intentó y por qué no se puede, para que nadie lo reintente.
 
 ## Ajustes
 
-Sin tocar código, con variables de entorno:
+El hook mide cuántas filas tiene tu terminal cada vez que dibuja y calcula solo el
+relleno: arriba una pantalla entera, para que el banner original salga por el techo, y
+abajo lo justo para que el huaso quede arriba. Así se ve igual en una ventana chica y en
+una maximizada. Si prefieres fijarlo a mano, con variables de entorno:
 
-- `DIECIOCHO_EMPUJE` (40): líneas en blanco arriba, las que empujan el banner original.
-- `DIECIOCHO_EMPUJE_ABAJO` (14): líneas abajo, las que suben el dibujo.
+- `DIECIOCHO_FILAS`: filas de la terminal, por si la medición falla o quieres forzarla.
+- `DIECIOCHO_EMPUJE`: líneas en blanco arriba, las que empujan el banner original.
+- `DIECIOCHO_EMPUJE_ABAJO`: líneas abajo, las que suben el dibujo.
+
+Si no se puede medir, usa 40 arriba y 14 abajo, que calzan con una ventana de unas 30
+filas.
 
 ## Licencia
 
