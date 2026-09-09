@@ -15,6 +15,7 @@ Se edita desde el computador y desde el celular con Claude Code web.
 | `prompt-monito.ps1` y `prompt-monito.sh` | Hook `UserPromptSubmit`: dibuja el banner cuando el usuario escribe `/dieciocho` |
 | `gate-dieciocho.cmd` y `gate-dieciocho.sh` | Filtro barato delante del hook anterior. Corre en cada prompt, así que decide con `findstr`/`grep` antes de levantar PowerShell |
 | `verbos.json` | Los 28 verbos chilenos del spinner |
+| `ESTADO.md` | Dónde quedó el trabajo, qué está probado y qué callejones ya se recorrieron. **Leerlo antes de retomar** |
 
 ## Reglas del código
 
