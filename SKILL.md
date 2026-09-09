@@ -51,19 +51,18 @@ correrlo con `-Sprite` / el primer argumento.
 
 ## Los dibujos
 
-Tres sprites, todos sobre la grilla real del bicho original — 17 columnas,
-ojos en las columnas 4 y 12, cuatro patitas — con chupalla negra de cinta
-blanca:
+Tres sprites, todos sobre la grilla real del bicho original: 17 columnas, ojos
+en las columnas 4 y 12, cuatro patitas.
 
 | Sprite | Qué es |
 |---|---|
 | `huaso` | Chupalla negra y poncho azul con franja roja |
 | `bandera` | Chupalla negra y poncho con la bandera: cantón azul con estrella, blanco al lado, franja roja abajo |
-| `volantin` | El huaso más un volantín arriba a la derecha, con el hilo bajando al poncho |
+| `volantin` | Chupalla de paja, con un volantín arriba a la derecha y el hilo bajando al poncho |
 | `aleatorio` | Sortea entre los tres. Es el que corre por defecto |
 
-Los tres existen también con chupalla de paja: `huaso-paja`, `bandera-paja`,
-`volantin-paja`.
+Variantes de sombrero: `huaso-paja` y `bandera-paja` con chupalla de paja, y
+`volantin-negro` con la chupalla negra.
 
 ```powershell
 & "<BASE>\render-monito.ps1" -Sprite volantin -Sangria 2
@@ -74,10 +73,14 @@ bash "<BASE>/render-monito.sh" volantin --sangria 2
 
 ### Cómo está dibujado
 
-Una celda de terminal es el doble de alta que de ancha, así que un píxel
-cuadrado no se hace con `█` sino con `▀`: color de texto arriba, color de
-fondo abajo. Salen **dos filas de arte por línea de terminal**, y por eso los
-sprites tienen 8 filas — 4 líneas exactas, sin media línea desperdiciada.
+**Un píxel por celda de terminal**, con `█`. Una celda es el doble de alta que
+de ancha, así que los píxeles son rectángulos parados — y esa es justamente la
+geometría del bicho original. Los sprites tienen 7 filas: las 5 del bicho más
+dos de sombrero.
+
+No uses medio bloque (`▀`) para esto. Da píxeles cuadrados, que se ven más
+"correctos" en abstracto pero dejan al monito **achatado a la mitad** al lado
+del original. Ya lo probamos y hubo que deshacerlo.
 
 Para agregar un sprite nuevo, edítalo en los dos renderizadores (`.ps1` y
 `.sh`) con las mismas letras: `c` coral, `p` paja, `a` azul, `r` rojo,

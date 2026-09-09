@@ -12,6 +12,8 @@ Se edita desde el computador y desde el celular con Claude Code web.
 | `README.md` | Instalación y explicación para quien clone el repo |
 | `render-monito.ps1` y `render-monito.sh` | Los dos renderizadores, uno por plataforma. Tienen que quedar iguales |
 | `sessionstart-monito.ps1` y `sessionstart-monito.sh` | Hook `SessionStart` que pinta el monito al arrancar |
+| `prompt-monito.ps1` y `prompt-monito.sh` | Hook `UserPromptSubmit`: dibuja el banner cuando el usuario escribe `/dieciocho` |
+| `gate-dieciocho.cmd` y `gate-dieciocho.sh` | Filtro barato delante del hook anterior. Corre en cada prompt, así que decide con `findstr`/`grep` antes de levantar PowerShell |
 | `verbos.json` | Los 28 verbos chilenos del spinner |
 
 ## Reglas del código
@@ -33,7 +35,13 @@ En Linux o macOS, y también en las sesiones en la nube de Claude Code:
 bash render-monito.sh --banner --modelo "Opus 5"
 bash render-monito.sh volantin --sangria 2
 bash sessionstart-monito.sh
+echo '{"prompt":"/dieciocho"}' | bash gate-dieciocho.sh   # debe salir JSON
+echo '{"prompt":"hola"}'       | bash gate-dieciocho.sh   # no debe salir nada
 ```
+
+La salida de los hooks tiene que ser JSON válido. Verificar siempre leyendo
+**bytes** y decodificando UTF-8 a mano: si se lee stdin como texto, la codepage
+de Windows destroza los bloques y parece un error del hook que no existe.
 
 El `.ps1` no se puede correr en la nube. Si un cambio toca los dos renderizadores, se
 prueba el `.sh` y el `.ps1` se revisa a ojo, espejando línea por línea.
