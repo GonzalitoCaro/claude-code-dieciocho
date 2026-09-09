@@ -194,6 +194,11 @@ opcionales de arriba.
   puros. Si editas uno, no pegues los caracteres literales.
 - **macOS trae bash 3.2**: nada de `mapfile` ni de arrays asociativos en el
   `.sh`. Por eso el color va en un `case` y no en un diccionario.
+- **Los hooks en Windows corren en el bash de Git**, no en PowerShell. Si el
+  comando de un hook trae backslashes, bash se los come como escape y sale
+  `command not found` con la ruta pegoteada. Las rutas van con slash normal y
+  entre comillas, y con `$USERPROFILE` en vez de `$HOME` (en el bash de Git
+  `$HOME` es `/c/Users/...`, que PowerShell no sabe leer).
 - **Color de 24 bits**: los sprites usan `ESC[38;2;R;G;Bm`. Windows Terminal,
   iTerm2 y la mayoría de los modernos lo soportan; la consola vieja de Windows
   (conhost) no, y ahí se ve plano.

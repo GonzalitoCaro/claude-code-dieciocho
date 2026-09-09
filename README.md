@@ -109,19 +109,36 @@ pintar debajo: Claude Code muestra al usuario el campo `systemMessage` de la
 salida JSON de un hook, y ese es el unico canal que dibuja en pantalla al
 arrancar. El monito queda justo bajo la ruta, con la cuenta regresiva.
 
-Agrega esto a `~/.claude/settings.json`:
+Agrega esto a `~/.claude/settings.json`.
 
+**Windows:**
 ```json
 "hooks": {
   "SessionStart": [
     { "hooks": [ { "type": "command",
-        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File $HOME\\.claude\\skills\\dieciocho\\sessionstart-monito.ps1",
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$USERPROFILE/.claude/skills/dieciocho/sessionstart-monito.ps1\"",
         "timeout": 20 } ] }
   ]
 }
 ```
 
-En macOS / Linux el comando es `bash ~/.claude/skills/dieciocho/sessionstart-monito.sh`.
+**macOS / Linux:**
+```json
+"hooks": {
+  "SessionStart": [
+    { "hooks": [ { "type": "command",
+        "command": "bash \"$HOME/.claude/skills/dieciocho/sessionstart-monito.sh\"",
+        "timeout": 20 } ] }
+  ]
+}
+```
+
+**Nunca pongas backslashes en el comando de un hook.** En Windows los hooks igual
+corren dentro del bash de Git, y bash se come el backslash como escape: una ruta
+`C:\Users\...` le llega al comando como `C:Users...` y el arranque queda con un
+`command not found` en pantalla. Por eso la ruta va con slash normal y entre
+comillas. Y por eso va `$USERPROFILE` y no `$HOME`: en el bash de Git `$HOME` es
+`/c/Users/...`, que PowerShell no sabe leer.
 
 Para sacarlo, borra el bloque `SessionStart`.
 
@@ -143,6 +160,9 @@ statusline es el único lugar donde puede quedar fijo.
   los scripts queden ASCII puros y no dependan del encoding con que se lean.
 - **macOS trae bash 3.2**: nada de `mapfile` ni arrays asociativos. Por eso el color va en
   un `case`.
+- **Los hooks en Windows corren en el bash de Git**, no en PowerShell: si el
+  comando trae backslashes, bash se los come y sale
+  `C:PROGRA~1Gitbinbash.exe: command not found`. Rutas con slash y entre comillas.
 - **Color de 24 bits** (`ESC[38;2;R;G;Bm`): Windows Terminal e iTerm2 lo soportan; la
   consola vieja de Windows no, y ahí se ve plano.
 
