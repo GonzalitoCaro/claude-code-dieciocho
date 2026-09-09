@@ -22,22 +22,61 @@ Y opcionalmente cambia los verbos del spinner por chilenismos: en vez de
 
 ## Instalar
 
-Clona el repo directo en tu carpeta de skills. Es todo lo que hay que hacer.
+Lo más corto es pedírselo a Claude Code. Pega esto en la terminal:
 
-**Windows (PowerShell):**
+```
+Instala la skill https://github.com/GonzalitoCaro/claude-code-dieciocho : clónala en
+~/.claude/skills/dieciocho, lee su README.md y deja instalado el hook UserPromptSubmit
+que dice ahí, sin borrar los hooks que ya tengo.
+```
+
+Claude clona, agrega una línea a tu `~/.claude/settings.json` (te va a pedir permiso) y
+listo: en la terminal siguiente, `/dieciocho` dibuja el banner.
+
+### A mano
+
+Son dos pasos. El primero da el comando `/dieciocho`; el segundo es el que dibuja.
+
+**1. Clonar en la carpeta de skills.**
+
+Windows (PowerShell):
 ```powershell
 git clone https://github.com/GonzalitoCaro/claude-code-dieciocho "$HOME\.claude\skills\dieciocho"
 ```
 
-**macOS / Linux:**
+macOS / Linux:
 ```bash
 git clone https://github.com/GonzalitoCaro/claude-code-dieciocho ~/.claude/skills/dieciocho
 ```
 
-Abre Claude Code y escribe `/dieciocho`. No hay dependencias: los renderizadores son
-un `.ps1` y un `.sh` pelados.
+**2. Agregar el hook** a `~/.claude/settings.json`. Es la misma línea en Windows, macOS y
+Linux, porque en Windows los hooks corren dentro del bash de Git. Si ya tienes `hooks`
+en ese archivo, suma esta entrada a las que hay:
 
-Para actualizar, `git pull` en esa misma carpeta. Para desinstalar, bórrala.
+```json
+"hooks": {
+  "UserPromptSubmit": [
+    { "hooks": [ { "type": "command",
+        "command": "bash \"$HOME/.claude/skills/dieciocho/gate-dieciocho.sh\"",
+        "timeout": 20 } ] }
+  ]
+}
+```
+
+La ruta va con slash normal y entre comillas, y con `$HOME`: bash se come los
+backslashes, y `$USERPROFILE` acá no sirve porque quien lee la ruta es bash.
+
+Sin el paso 2 la skill igual funciona, pero el dibujo sale colapsado en "Ran 1 shell
+command" y hay que expandirlo. Con el hook aparece solo, arriba de la respuesta.
+
+Qué necesita: Claude Code, y en Windows el Git for Windows que Claude Code ya exige.
+Nada más: los renderizadores son un `.ps1` y un `.sh` pelados. El hook corre en cada
+mensaje, pero filtra con `grep` antes de levantar nada (unos 120 ms en Windows, nada en
+Mac y Linux). Claude Code le antepone la etiqueta `UserPromptSubmit says:` y esa no se
+puede sacar.
+
+Para actualizar, `git pull` en esa misma carpeta. Para desinstalar, bórrala y saca el
+bloque `UserPromptSubmit` del `settings.json`.
 
 ## Los tres monitos
 

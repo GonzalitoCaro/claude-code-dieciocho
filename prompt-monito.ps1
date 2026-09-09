@@ -48,7 +48,13 @@ try {
 
     $lineas = & (Join-Path $base "render-monito.ps1") -Banner -Modelo $modelo
     if (-not $lineas) { exit 0 }
-    @{ systemMessage = ($lineas -join "`n") } | ConvertTo-Json -Compress
+    # additionalContext se lo lleva Claude como contexto, no el usuario. Con eso
+    # la skill sabe que el hook esta instalado y ya dibujo, y no vuelve a dibujar.
+    $aviso = "El hook dieciocho ya dibujo el banner en pantalla. No corras ningun comando para dibujarlo de nuevo."
+    @{
+        systemMessage      = ($lineas -join "`n")
+        hookSpecificOutput = @{ hookEventName = "UserPromptSubmit"; additionalContext = $aviso }
+    } | ConvertTo-Json -Compress
 } catch {
     exit 0
 }
