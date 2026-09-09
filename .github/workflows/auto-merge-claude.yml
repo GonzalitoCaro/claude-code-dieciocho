@@ -5,6 +5,12 @@
 # cuando la sesion abre el PR, se mergea al toque con squash y se borra la rama.
 #
 # Para dejar un cambio en revision en vez de mergearlo, abrir el PR como draft.
+#
+# SEGURIDAD, para cuando el repo sea publico. El job solo corre si se cumplen
+# las tres condiciones del `if`: la rama vive en este mismo repo (un PR desde
+# un fork nunca la cumple), el autor es el dueno del repo, y el PR no es draft.
+# Ademas, GitHub le da token de solo lectura a los workflows disparados por PRs
+# desde forks, asi que aunque el `if` pasara el merge fallaria igual.
 name: Auto-merge PR de Claude
 
 on:
@@ -20,7 +26,8 @@ jobs:
     if: >-
       github.event.pull_request.draft == false &&
       startsWith(github.event.pull_request.head.ref, 'claude/') &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == github.repository_owner
     runs-on: ubuntu-latest
     steps:
       - name: Squash merge y borrar la rama
