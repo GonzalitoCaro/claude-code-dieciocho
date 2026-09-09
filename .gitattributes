@@ -1,0 +1,2 @@
+# El renderizador de sh se rompe con CRLF: siempre LF, tambien en Windows
+*.sh text eol=lf
