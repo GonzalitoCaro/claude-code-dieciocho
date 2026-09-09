@@ -57,8 +57,8 @@ corre en tu máquina.
 | **Qué manda por red** | Nada. No hay una sola llamada de red en el código |
 | **Cuánto demora** | ~120 ms cuando no calza. Por eso el filtro es un `grep` y no algo más pesado |
 
-Son unas 100 líneas de shell, en `skills/dieciocho/`. Están comentadas y se leen en cinco
-minutos: si vas a dejar que algo corra en cada mensaje que escribes, revísalo primero.
+Son unas 600 líneas entre bash y PowerShell, en `skills/dieciocho/`, y la mitad son
+comentarios: si vas a dejar que algo corra en cada mensaje que escribes, revísalo primero.
 
 Para desinstalar: `/plugin uninstall dieciocho@claude-code-dieciocho`.
 
