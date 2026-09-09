@@ -1,8 +1,11 @@
 # claude-code-dieciocho
 
 Skill de Claude Code que dibuja el bichito del banner vestido de huaso para el 18 de
-septiembre. Repo privado de la cuenta personal, fuera de la organización de la agencia.
+septiembre. Repo público de la cuenta personal, fuera de la organización de la agencia.
 Se edita desde el computador y desde el celular con Claude Code web.
+
+Como es público, acá no entran rutas personales, correos, nombres de terceros ni nada de
+la agencia. Antes de cada commit, mirar el diff con ese ojo.
 
 ## Qué hay
 
