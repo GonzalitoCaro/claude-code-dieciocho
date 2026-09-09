@@ -17,11 +17,13 @@ set -u
 SPRITE="aleatorio"
 SANGRIA=1
 BANNER=0
+CUENTA=0
 MODELO=""
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --banner)  BANNER=1; shift ;;
+    --cuenta)  CUENTA=1; shift ;;
     --modelo)  MODELO="${2:-}"; shift 2 ;;
     --sangria) SANGRIA="${2:-1}"; shift 2 ;;
     *)         SPRITE="$1"; shift ;;
@@ -78,7 +80,7 @@ aabaaabbbbbbbbbbb
 ....c.c...c.c....
 EOF
     ;;
-    volantin) cat <<'EOF'
+    volantin-negro) cat <<'EOF'
 .....nnnnnnn......r..
 .....wwwwwww.....rrr.
 nnnnnnnnnnnnnnnnn.r..
@@ -109,7 +111,7 @@ aabaaabbbbbbbbbbb
 ....c.c...c.c....
 EOF
     ;;
-    volantin-paja) cat <<'EOF'
+    volantin|volantin-paja) cat <<'EOF'
 .....ppppppp......r..
 ppppppppppppppppp.rrr
 ..ccccccccccccc...r..
@@ -121,7 +123,7 @@ EOF
     ;;
     *)
       echo "Sprite desconocido: $1" >&2
-      echo "Opciones: huaso, bandera, volantin, huaso-paja, bandera-paja, volantin-paja, aleatorio" >&2
+      echo "Opciones: huaso, bandera, volantin, huaso-paja, bandera-paja, volantin-negro, aleatorio" >&2
       exit 1
     ;;
   esac
@@ -167,7 +169,7 @@ celda() {
 # El sprite tiene 8 filas = 4 lineas de terminal, y el banner de Claude Code
 # tiene 3 lineas de texto. La cuarta es la cuenta regresiva.
 TEXTOS=()
-if [ "$BANNER" -eq 1 ]; then
+if [ "$BANNER" -eq 1 ] || [ "$CUENTA" -eq 1 ]; then
   BLOQUE=$(printf '\xe2\x96\x88')   # bloque lleno, para la banderita
   C_PAJA="${ESC}[38;2;217;164;65m"
   C_AZUL="${ESC}[38;2;90;130;220m"
@@ -175,19 +177,27 @@ if [ "$BANNER" -eq 1 ]; then
   C_ROJO="${ESC}[38;2;225;80;90m"
   C_TENUE="${ESC}[38;2;138;128;120m"
 
-  # Version real, si claude esta en el PATH
-  VERSION=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
-  if [ -n "$VERSION" ]; then
-    TEXTOS[${#TEXTOS[@]}]="${C_BLANCO}Claude Code v${VERSION}${RESET}"
-  fi
+  # Con --banner replicamos las lineas del banner. Con --cuenta no: en el
+  # arranque el banner de verdad ya salio arriba y repetirlo se ve raro.
+  if [ "$BANNER" -eq 1 ]; then
+    # Version real, si claude esta en el PATH
+    VERSION=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+    if [ -n "$VERSION" ]; then
+      TEXTOS[${#TEXTOS[@]}]="${C_BLANCO}Claude Code v${VERSION}${RESET}"
+    fi
 
-  # La linea del modelo la pasa Claude al invocar la skill: el script no
-  # tiene como saber el nombre bonito del modelo de la sesion.
-  if [ -n "$MODELO" ]; then
-    TEXTOS[${#TEXTOS[@]}]="${C_TENUE}${MODELO}${RESET}"
-  fi
+    # La linea del modelo la pasa Claude al invocar la skill: el script no
+    # tiene como saber el nombre bonito del modelo de la sesion.
+    if [ -n "$MODELO" ]; then
+      TEXTOS[${#TEXTOS[@]}]="${C_TENUE}${MODELO}${RESET}"
+    fi
 
-  TEXTOS[${#TEXTOS[@]}]="${C_TENUE}$(pwd)${RESET}"
+    TEXTOS[${#TEXTOS[@]}]="${C_TENUE}$(pwd)${RESET}"
+  else
+    # Solo la cuenta: la dejamos a media altura del monito
+    TEXTOS[${#TEXTOS[@]}]=""
+    TEXTOS[${#TEXTOS[@]}]=""
+  fi
 
   # --- Cuenta regresiva al 18 ---
   # date -d es GNU, date -j -f es BSD/macOS: probamos el primero y caemos al otro
@@ -247,7 +257,7 @@ while [ $y -lt "$TOTAL" ]; do
   done
   # Cada linea del sprite ocupa exactamente $ANCHO celdas visibles, asi que
   # el texto queda alineado sin tener que medir los codigos ANSI.
-  if [ "$NLINEA" -lt "${#TEXTOS[@]}" ]; then
+  if [ "$NLINEA" -lt "${#TEXTOS[@]}" ] && [ -n "${TEXTOS[$NLINEA]}" ]; then
     linea="${linea}  ${TEXTOS[$NLINEA]}"
   fi
   NLINEA=$(( NLINEA + 1 ))

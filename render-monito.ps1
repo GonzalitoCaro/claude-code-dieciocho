@@ -16,6 +16,7 @@ param(
     [string]$Sprite = "aleatorio",
     [int]$Sangria = 1,
     [switch]$Banner,          # dibuja el monito con las lineas del banner al lado
+    [switch]$Cuenta,          # dibuja el monito solo con la cuenta regresiva
     [string]$Modelo = ""      # linea del modelo; la pasa Claude al invocar la skill
 )
 
@@ -58,7 +59,7 @@ $sprites = @{
         '..rrrrrrrrrrrrr..',
         '....c.c...c.c....'
     )
-    'volantin' = @(
+    'volantin-negro' = @(
         '.....nnnnnnn......r..',
         '.....wwwwwww.....rrr.',
         'nnnnnnnnnnnnnnnnn.r..',
@@ -86,7 +87,7 @@ $sprites = @{
         '..rrrrrrrrrrrrr..',
         '....c.c...c.c....'
     )
-    'volantin-paja' = @(
+    'volantin' = @(
         '.....ppppppp......r..',
         'ppppppppppppppppp.rrr',
         '..ccccccccccccc...r..',
@@ -96,6 +97,8 @@ $sprites = @{
         '....c.c...c.c........'
     )
 }
+# El volantin va con chupalla de paja; el negro queda como variante
+$sprites['volantin-paja'] = $sprites['volantin']
 
 # "aleatorio" sortea entre los tres que elegimos
 if ($Sprite -eq "aleatorio") {
@@ -133,7 +136,7 @@ $margen = " " * $Sangria
 # El sprite tiene 8 filas = 4 lineas de terminal, y el banner de Claude Code
 # tiene 3 lineas de texto. La cuarta es la cuenta regresiva.
 $textos = @()
-if ($Banner) {
+if ($Banner -or $Cuenta) {
     $bloque  = [string][char]0x2588  # bloque lleno, para la banderita
     $iTilde  = [string][char]0x00ED  # i con tilde
     $enie    = [string][char]0x00F1  # enie
@@ -145,19 +148,27 @@ if ($Banner) {
     $cRojo   = "$e[38;2;225;80;90m"
     $cTenue  = "$e[38;2;138;128;120m"
 
-    # Version real, si claude esta en el PATH
-    $version = ""
-    try {
-        $salida = (& claude --version 2>$null)
-        if ($salida -match '([0-9]+\.[0-9]+\.[0-9]+)') { $version = $Matches[1] }
-    } catch {}
-    if ($version) { $textos += "$cBlanco" + "Claude Code v$version" + $reset }
+    # Con -Banner replicamos las lineas del banner. Con -Cuenta no: en el
+    # arranque el banner de verdad ya salio arriba y repetirlo se ve raro.
+    if ($Banner) {
+        # Version real, si claude esta en el PATH
+        $version = ""
+        try {
+            $salida = (& claude --version 2>$null)
+            if ($salida -match '([0-9]+\.[0-9]+\.[0-9]+)') { $version = $Matches[1] }
+        } catch {}
+        if ($version) { $textos += "$cBlanco" + "Claude Code v$version" + $reset }
 
-    # La linea del modelo la pasa Claude al invocar la skill: el script no
-    # tiene como saber el nombre bonito del modelo de la sesion.
-    if ($Modelo) { $textos += "$cTenue$Modelo$reset" }
+        # La linea del modelo la pasa Claude al invocar la skill: el script no
+        # tiene como saber el nombre bonito del modelo de la sesion.
+        if ($Modelo) { $textos += "$cTenue$Modelo$reset" }
 
-    $textos += "$cTenue$($PWD.Path)$reset"
+        $textos += "$cTenue$($PWD.Path)$reset"
+    } else {
+        # Solo la cuenta: la dejamos a media altura del monito
+        $textos += ""
+        $textos += ""
+    }
 
     # --- Cuenta regresiva al 18 ---
     $hoy  = (Get-Date).Date
@@ -209,7 +220,7 @@ for ($y = 0; $y -lt $grid.Count; $y += 2) {
 
     # Cada linea del sprite ocupa exactamente $ancho celdas visibles, asi que
     # el texto queda alineado sin tener que medir los codigos ANSI.
-    if ($nLinea -lt $textos.Count) { $linea += "  " + $textos[$nLinea] }
+    if ($nLinea -lt $textos.Count -and $textos[$nLinea]) { $linea += "  " + $textos[$nLinea] }
     $nLinea++
 
     $linea

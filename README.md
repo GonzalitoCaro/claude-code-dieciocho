@@ -48,9 +48,10 @@ cuatro patitas — y le agregan sombrero y manta.
 |---|---|
 | `huaso` | Chupalla negra y poncho azul con franja roja |
 | `bandera` | Chupalla negra y poncho con la bandera: cantón azul con estrella, blanco al lado y franja roja abajo |
-| `volantin` | El huaso con un volantín arriba a la derecha y el hilo bajando al poncho |
+| `volantin` | Chupalla de paja, con un volantín arriba a la derecha y el hilo bajando al poncho |
 
-Los tres existen también con chupalla de paja: `huaso-paja`, `bandera-paja`, `volantin-paja`.
+Variantes de sombrero: `huaso-paja` y `bandera-paja` con chupalla de paja, y `volantin-negro`
+con la chupalla negra.
 
 Para dibujar uno específico, sin pasar por la skill:
 
@@ -101,10 +102,34 @@ objeto como la clave `spinnerVerbs` de tu `~/.claude/settings.json`:
 `replace` deja solo los chilenos; `append` los mezcla con los originales. Se aplican al
 toque, sin reiniciar. Para apagarlos, saca la clave.
 
+## Que salga solo, al arrancar
+
+El dibujo del banner no se puede reemplazar, pero un hook `SessionStart` puede
+pintar debajo: Claude Code muestra al usuario el campo `systemMessage` de la
+salida JSON de un hook, y ese es el unico canal que dibuja en pantalla al
+arrancar. El monito queda justo bajo la ruta, con la cuenta regresiva.
+
+Agrega esto a `~/.claude/settings.json`:
+
+```json
+"hooks": {
+  "SessionStart": [
+    { "hooks": [ { "type": "command",
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File $HOME\.claude\skills\dieciocho\sessionstart-monito.ps1",
+        "timeout": 20 } ] }
+  ]
+}
+```
+
+En macOS / Linux el comando es `bash ~/.claude/skills/dieciocho/sessionstart-monito.sh`.
+
+Para sacarlo, borra el bloque `SessionStart`.
+
 ## Lo que no se puede
 
 El bicho del banner de inicio **no se puede reemplazar**: está hardcodeado en el binario
-de Claude Code. En el binario, `BannerConfig` resulta ser el banner corporativo de texto
+de Claude Code. Lo más cerca que se llega es el hook de arriba, que dibuja el huaso
+*debajo* del banner original. En el binario, `BannerConfig` resulta ser el banner corporativo de texto
 —color de fondo, link, 200 caracteres— y no tiene nada que ver con el sprite.
 
 Así que el monito no se reemplaza, se dibuja: la skill lo pinta cuando la invocas, y la
