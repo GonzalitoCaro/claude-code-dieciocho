@@ -11,19 +11,27 @@ autocontenida: se puede copiar a otro computador tal cual.
 
 ## Al invocarla sin instrucciones
 
-Dibuja un monito al azar con las líneas del banner al lado — versión, modelo,
-ruta y la cuenta regresiva al 18. Nada más: no instales ni cambies nada sin
-que el usuario lo pida.
+**No corras ningún comando.** Con el hook `UserPromptSubmit` instalado (ver más
+abajo), el banner dieciochero ya se dibujó solo, arriba de tu respuesta, en el
+momento en que el usuario escribió `/dieciocho`. Si además lo dibujas tú, sale
+"Ran 1 shell command" y el usuario ve el ruido en vez del monito.
+
+Responde una línea corta y nada más. Si el usuario pide otro sprite, ahí sí
+corres el renderizador:
 
 **Windows:**
 ```powershell
-& "<BASE>\render-monito.ps1" -Banner -Modelo "<MODELO>"
+& "<BASE>\render-monito.ps1" -Sprite volantin -Banner -Modelo "<MODELO>"
 ```
 
 **macOS / Linux:**
 ```bash
-bash "<BASE>/render-monito.sh" --banner --modelo "<MODELO>"
+bash "<BASE>/render-monito.sh" volantin --banner --modelo "<MODELO>"
 ```
+
+Ojo igual: la salida de un comando la colapsa Claude Code a "Ran 1 shell
+command" y el usuario no ve el dibujo salvo que la expanda. El único canal que
+dibuja de verdad en pantalla es el `systemMessage` de un hook.
 
 `<BASE>` es el directorio base de esta skill, que Claude Code entrega al
 invocarla. **Nunca escribas rutas absolutas de un usuario en particular**: esta
@@ -88,6 +96,49 @@ Sobre lo último: en el binario, `BannerConfig` es el banner corporativo de
 texto (color de fondo, link, 200 caracteres), no el sprite. No hay setting
 para el dibujo. Si el usuario lo pide, dile esto derecho en vez de buscar un
 truco: lo más cerca que se llega es la statusline, que sí se ve siempre.
+
+## Que el comando dibuje el banner (hook UserPromptSubmit)
+
+Es la pieza clave. El banner de arranque lo pinta el binario y no se puede
+tocar; y la salida de un comando la colapsa Claude Code a "Ran 1 shell
+command". El unico canal que dibuja de verdad en pantalla es el campo
+`systemMessage` de la salida JSON de un hook.
+
+Entonces: un hook `UserPromptSubmit` detecta que el usuario escribio
+`/dieciocho` y pinta el banner dieciochero ahi mismo.
+
+**Windows** -- en `~/.claude/settings.json`:
+
+```json
+"hooks": {
+  "UserPromptSubmit": [
+    { "hooks": [ { "type": "command",
+        "command": "cmd /c \"C:\\Users\\<TU-USUARIO>\\.claude\\skills\\dieciocho\\gate-dieciocho.cmd\"",
+        "timeout": 20 } ] }
+  ]
+}
+```
+
+**macOS / Linux**: el comando es `bash ~/.claude/skills/dieciocho/gate-dieciocho.sh`.
+
+### Por que hay un "gate" y no se llama al script directo
+
+Este hook corre en **cada** prompt, no solo en `/dieciocho`. Levantar
+PowerShell cada vez cuesta ~380 ms, que se sienten. El `gate` filtra primero
+con `findstr` (~85 ms en Windows) o `grep` (~5 ms en Unix) y recien ahi levanta
+lo pesado. El filtro consume el stdin, por eso el script va con `-Directo` y no
+lo vuelve a leer.
+
+Para sacarlo, borra el bloque `UserPromptSubmit`.
+
+### Si lo quieres tambien al arrancar
+
+Hay un `sessionstart-monito.ps1` / `.sh` que hace lo mismo en el evento
+`SessionStart`. Dibuja el monito con solo la cuenta regresiva, debajo del
+banner real. No viene activado.
+
+Aviso: Claude Code le pone a todo mensaje de hook una etiqueta del tipo
+`SessionStart:startup says:` y **esa etiqueta no se puede quitar**.
 
 ## Verbos del spinner
 
