@@ -110,27 +110,41 @@ command". El unico canal que dibuja de verdad en pantalla es el campo
 Entonces: un hook `UserPromptSubmit` detecta que el usuario escribio
 `/dieciocho` y pinta el banner dieciochero ahi mismo.
 
-**Windows** -- en `~/.claude/settings.json`:
+En `~/.claude/settings.json`. Es el mismo comando en Windows, macOS y Linux:
 
 ```json
 "hooks": {
   "UserPromptSubmit": [
     { "hooks": [ { "type": "command",
-        "command": "cmd /c \"C:\\Users\\<TU-USUARIO>\\.claude\\skills\\dieciocho\\gate-dieciocho.cmd\"",
+        "command": "bash \"$HOME/.claude/skills/dieciocho/gate-dieciocho.sh\"",
         "timeout": 20 } ] }
   ]
 }
 ```
 
-**macOS / Linux**: el comando es `bash ~/.claude/skills/dieciocho/gate-dieciocho.sh`.
+En Windows tambien va el `.sh`: Claude Code corre los hooks dentro del bash de
+Git, no en `cmd` ni en PowerShell. De ahi salen las dos reglas que mas caro han
+costado:
+
+- **Nada de backslashes en el comando.** Bash se los come como escape y la ruta
+  llega pegoteada. Un comando que empieza con `C:\PROGRA~1\Git\bin\bash.exe`
+  falla con `C:PROGRA~1Gitbinbash.exe: command not found`. Slash normal y
+  comillas.
+- **`$HOME`, no `$USERPROFILE`**, porque el que lee la ruta es bash: en el bash
+  de Git `$HOME` ya es `/c/Users/...`. Al reves cuando el comando es
+  `powershell -File`: ahi va `$USERPROFILE`, que es el unico que PowerShell
+  sabe leer.
+
+Queda un `gate-dieciocho.cmd` con `findstr` por si alguna version vuelve a
+correr los hooks por `cmd`. Hoy no hace falta.
 
 ### Por que hay un "gate" y no se llama al script directo
 
 Este hook corre en **cada** prompt, no solo en `/dieciocho`. Levantar
 PowerShell cada vez cuesta ~380 ms, que se sienten. El `gate` filtra primero
-con `findstr` (~85 ms en Windows) o `grep` (~5 ms en Unix) y recien ahi levanta
-lo pesado. El filtro consume el stdin, por eso el script va con `-Directo` y no
-lo vuelve a leer.
+con `grep` (~119 ms con el bash de Git, ~5 ms en Unix) y recien ahi levanta lo
+pesado. El filtro consume el stdin, por eso el renderizador va directo y no lo
+vuelve a leer.
 
 Para sacarlo, borra el bloque `UserPromptSubmit`.
 
