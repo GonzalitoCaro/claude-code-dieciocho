@@ -37,17 +37,21 @@ fi
 
 # Cuantas filas tiene la terminal. Los rellenos de abajo dependen de esto: con
 # un numero fijo el huaso queda a media altura en una ventana chica y pegado
-# arriba con un hueco en una grande. Un hook no tiene tty, asi que en Windows
-# se le pregunta a PowerShell por la ventana de la consola (RawUI si responde,
-# [Console]::WindowHeight no: el handle de salida esta redirigido) y en
-# macOS/Linux a /dev/tty, que los hooks heredan. tput no sirve: sin tty
-# inventa 24. Si nada responde, se usan los valores fijos de siempre.
-# DIECIOCHO_FILAS fuerza la medida, para probar o si la medicion falla.
+# arriba con un hueco en una grande. Un hook no hereda la terminal: en Windows
+# Claude Code lo lanza sin consola, y cualquier cosa que pregunte por "la
+# consola" recibe una oculta de 120x30, el tamano por defecto de Windows.
+# RawUI, [Console] y mode con devuelven 30 siempre. Lo que si sirve es
+# engancharse a la consola del proceso de Claude Code (CLAUDE_PID) y
+# preguntarle a esa: eso hace medir-filas.ps1. En macOS/Linux basta con
+# /dev/tty. tput no sirve: sin tty inventa 24. Si nada responde, quedan los
+# valores fijos de siempre. DIECIOCHO_FILAS fuerza la medida.
 medir_filas() {
   f=""
   case "$(uname -s 2>/dev/null)" in
     MINGW*|MSYS*|CYGWIN*)
-      f=$(powershell -NoProfile -NonInteractive -Command '$Host.UI.RawUI.WindowSize.Height' 2>/dev/null | tr -cd '0-9') ;;
+      if [ -n "${CLAUDE_PID:-}" ]; then
+        f=$(powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$BASE/medir-filas.ps1" -ProcesoId "$CLAUDE_PID" 2>/dev/null | tr -cd '0-9')
+      fi ;;
     *)
       f=$(stty size </dev/tty 2>/dev/null | cut -d' ' -f1) ;;
   esac
@@ -58,11 +62,14 @@ FILAS="${DIECIOCHO_FILAS:-$(medir_filas)}"
 case "$FILAS" in ''|*[!0-9]*) FILAS="" ;; esac
 if [ -n "$FILAS" ] && [ "$FILAS" -gt 0 ]; then
   # Arriba, una pantalla entera: el banner original sale por el techo seguro.
-  # Abajo, lo que sobra tras descontar el arte (7 lineas) y lo que ocupa la
-  # zona de abajo (respuesta, estado, prompt, barra), que son unas 10 filas.
-  # Queda una fila en blanco sobre el huaso, igual que en el banner original.
+  # Abajo, lo que sobra tras descontar el arte (7 lineas), los 2 saltos que el
+  # TUI mete entre mensajes y la zona de abajo (respuesta, estado, prompt,
+  # barra), que son unas 10 filas. Medido en pantallazos: con ABAJO = FILAS - 17
+  # la primera fila del arte cae en la fila 1 de la pantalla. Se dejan 2 mas
+  # para que quede una fila en blanco encima, como en el banner original, y
+  # para que una respuesta de dos lineas no le corte la chupalla.
   EMPUJE_DEF=$FILAS
-  ABAJO_DEF=$(( FILAS - 17 ))
+  ABAJO_DEF=$(( FILAS - 19 ))
   [ "$ABAJO_DEF" -lt 0 ] && ABAJO_DEF=0
 else
   EMPUJE_DEF=40

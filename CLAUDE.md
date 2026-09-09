@@ -17,6 +17,7 @@ Es un plugin de Claude Code: `.claude-plugin/` trae los manifiestos,
 | `skills/dieciocho/sessionstart-monito.ps1` y `sessionstart-monito.sh` | Hook `SessionStart` que pinta el monito al arrancar |
 | `skills/dieciocho/prompt-monito.sh` | Hook `UserPromptSubmit`: dibuja el banner cuando el usuario escribe `/dieciocho`. Mide las filas de la terminal y calcula el relleno |
 | `skills/dieciocho/gate-dieciocho.sh` | Filtro barato delante del hook anterior. Corre en cada prompt, así que decide con `grep` antes de levantar nada |
+| `skills/dieciocho/medir-filas.ps1` | Solo Windows. Se engancha a la consola del proceso de Claude Code (`CLAUDE_PID`) y devuelve cuántas filas tiene la ventana. Cómo y por qué, en `ESTADO.md` |
 | `skills/dieciocho/gate-dieciocho.cmd` y `prompt-monito.ps1` | Reserva. `hooks.json` no los usa: en Windows los hooks también corren en el bash de Git. No tienen el relleno ni la medición del `.sh` |
 | `skills/dieciocho/verbos.json` | Los 28 verbos chilenos del spinner |
 | `ESTADO.md` | Dónde quedó el trabajo, qué está probado y qué callejones ya se recorrieron. **Leerlo antes de retomar** |

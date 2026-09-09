@@ -52,7 +52,7 @@ corre en tu máquina.
 |---|---|
 | **Cuándo corre** | En cada mensaje que escribes |
 | **Qué hace** | Busca la palabra "dieciocho" en tu prompt. Si no está, se apaga y no hace nada más |
-| **Qué lee** | Tu prompt, la altura de la ventana de la terminal, y de tu `settings.json` solo el modelo y el nivel de esfuerzo, para que el banner diga lo mismo que el de verdad |
+| **Qué lee** | Tu prompt, la altura de la ventana de la terminal (en Windows se engancha a la consola de Claude Code para leerla, nada más), y de tu `settings.json` solo el modelo y el nivel de esfuerzo, para que el banner diga lo mismo que el de verdad |
 | **Qué escribe** | Nada |
 | **Qué manda por red** | Nada. No hay una sola llamada de red en el código |
 | **Cuánto demora** | ~120 ms cuando no calza. Por eso el filtro es un `grep` y no algo más pesado |

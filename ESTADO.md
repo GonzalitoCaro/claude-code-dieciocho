@@ -64,9 +64,9 @@ echo '{"prompt":"hola"}'       | bash skills/dieciocho/gate-dieciocho.sh   # no 
 ## Lo que se puede afinar sin tocar código
 
 Los rellenos se calculan a partir de las filas de la terminal: arriba tantas líneas como
-filas, abajo las filas menos 17 (7 del arte y unas 10 de la zona del prompt). Con un
-número fijo el huaso quedaba a media altura en una ventana chica y pegado arriba con un
-hueco en una maximizada.
+filas, abajo las filas menos 19 (7 del arte, 2 saltos entre mensajes, unas 10 de la zona
+del prompt y una fila en blanco encima del huaso). Con un número fijo el huaso quedaba a
+media altura en una ventana chica y pegado arriba con un hueco en una maximizada.
 
 - `DIECIOCHO_FILAS`: fuerza la altura medida. Sirve para probar (`DIECIOCHO_FILAS=24`) y
   como salida si la medición falla.
@@ -75,7 +75,22 @@ hueco en una maximizada.
 
 Sin medida, quedan los fijos de antes: 40 arriba y 14 abajo.
 
-**Cómo se mide.** Un hook no tiene tty. En Windows, `$Host.UI.RawUI.WindowSize.Height`
-desde PowerShell sí responde (`[Console]::WindowHeight` no: el handle de salida está
-redirigido y tira "Controlador no válido"). En macOS y Linux, `stty size </dev/tty`. No
-usar `tput lines`: sin tty inventa 24 y parece un valor real.
+**Cómo se mide.** Un hook no hereda la terminal. En Windows, Claude Code lo lanza sin
+consola, y cualquier proceso que pregunte por "la consola" recibe una oculta nueva de
+120x30, el tamaño por defecto de Windows: `$Host.UI.RawUI.WindowSize.Height` devuelve 30
+siempre y parece un valor real (costó un pantallazo darse cuenta). `[Console]::WindowHeight`
+directamente falla con "Controlador no válido". Lo que sirve es `medir-filas.ps1`:
+`FreeConsole`, `AttachConsole` al PID que llega en `CLAUDE_PID`, abrir `CONOUT$` y leer
+`srWindow` con `GetConsoleScreenBufferInfo`. `srWindow`, no `dwSize`: `dwSize` es el buffer
+de scroll, 9001 líneas en Windows Terminal. En macOS y Linux, `stty size </dev/tty`. No
+usar `tput lines`: sin tty inventa 24.
+
+Dos trampas de PowerShell 5.1 en ese script: `Add-Type -PassThru` devuelve la clase y las
+structs anidadas en un arreglo, así que hay que tomar `[Dieciocho.Consola]` por nombre; y
+`0xC0000000` se lee como Int32 negativo, el acceso de `CreateFile` va en decimal.
+
+**Cómo probar la medición sin abrir una terminal nueva.** Desde una sesión de Claude Code,
+`CLAUDE_PID` es el proceso interactivo, y `powershell -File skills/dieciocho/medir-filas.ps1
+-ProcesoId $CLAUDE_PID` tiene que dar las filas de esa ventana. Ojo: si se prueba con
+`claude -p` lanzado desde un tool de Bash, da 30, porque ese `claude -p` ya nació sin
+consola. Eso no pasa en la sesión interactiva de verdad.
