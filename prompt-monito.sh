@@ -4,6 +4,11 @@
 set -u
 BASE="$(cd "$(dirname "$0")" && pwd)"
 
+# El dibujo queda indentado ~6 columnas y NO se puede pegar al margen: el TUI
+# renderiza los mensajes de hook como rama del arbol. Probado y descartado:
+# ESC[1G (CHA) y retorno de carro al inicio de cada linea. El TUI los filtra
+# al componer el cuadro. No reintentar.
+
 # Linea del modelo, leida de la configuracion del usuario para que diga lo
 # mismo que el banner de verdad. Sin parser de JSON: basta con un grep.
 MODELO=""
@@ -68,6 +73,7 @@ fi
 # del proyecto, asi que tambien escapamos comillas y backslashes.
 # El backslash se fabrica con sprintf("%c", 92): pasarlo como literal hace que
 # awk lo interprete como escape y lo convierta en un salto de linea real.
+
 JSON=$(printf '%s' "$ARTE" | awk -v esc="$(printf '\033')" '
   BEGIN { bs = sprintf("%c", 92); comilla = sprintf("%c", 34) }
   {
