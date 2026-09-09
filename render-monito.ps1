@@ -14,7 +14,9 @@
 
 param(
     [string]$Sprite = "aleatorio",
-    [int]$Sangria = 1
+    [int]$Sangria = 1,
+    [switch]$Banner,          # dibuja el monito con las lineas del banner al lado
+    [string]$Modelo = ""      # linea del modelo; la pasa Claude al invocar la skill
 )
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -52,8 +54,8 @@ $sprites = @{
         'nnnnnnnnnnnnnnnnn',
         '..ccccccccccccc..',
         '..cc.ccccccc.cc..',
-        'aaaaaabbbbbrrrrrr',
-        '..aaaabbbbbrrrr..',
+        'aabaaabbbbbbbbbbb',
+        '..rrrrrrrrrrrrr..',
         '....c.c...c.c....'
     )
     'volantin' = @(
@@ -80,8 +82,8 @@ $sprites = @{
         'ppppppppppppppppp',
         '..ccccccccccccc..',
         '..cc.ccccccc.cc..',
-        'aaaaaabbbbbrrrrrr',
-        '..aaaabbbbbrrrr..',
+        'aabaaabbbbbbbbbbb',
+        '..rrrrrrrrrrrrr..',
         '....c.c...c.c....'
     )
     'volantin-paja' = @(
@@ -127,7 +129,60 @@ foreach ($f in $grid) { if ($f.Length -gt $ancho) { $ancho = $f.Length } }
 
 $margen = " " * $Sangria
 
+# --- Lineas de texto al costado (solo con -Banner) ---
+# El sprite tiene 8 filas = 4 lineas de terminal, y el banner de Claude Code
+# tiene 3 lineas de texto. La cuarta es la cuenta regresiva.
+$textos = @()
+if ($Banner) {
+    $bloque  = [string][char]0x2588  # bloque lleno, para la banderita
+    $iTilde  = [string][char]0x00ED  # i con tilde
+    $enie    = [string][char]0x00F1  # enie
+    $admira  = [string][char]0x00A1  # signo de admiracion abierto
+
+    $cPaja   = "$e[38;2;217;164;65m"
+    $cAzul   = "$e[38;2;90;130;220m"
+    $cBlanco = "$e[38;2;237;231;219m"
+    $cRojo   = "$e[38;2;225;80;90m"
+    $cTenue  = "$e[38;2;138;128;120m"
+
+    # Version real, si claude esta en el PATH
+    $version = ""
+    try {
+        $salida = (& claude --version 2>$null)
+        if ($salida -match '([0-9]+\.[0-9]+\.[0-9]+)') { $version = $Matches[1] }
+    } catch {}
+    if ($version) { $textos += "$cBlanco" + "Claude Code v$version" + $reset }
+
+    # La linea del modelo la pasa Claude al invocar la skill: el script no
+    # tiene como saber el nombre bonito del modelo de la sesion.
+    if ($Modelo) { $textos += "$cTenue$Modelo$reset" }
+
+    $textos += "$cTenue$($PWD.Path)$reset"
+
+    # --- Cuenta regresiva al 18 ---
+    $hoy  = (Get-Date).Date
+    $anio = $hoy.Year
+    $d18  = (Get-Date -Year $anio -Month 9 -Day 18).Date
+    # Pasado el 19 ya miramos el dieciocho del proximo anio
+    if ($hoy -gt (Get-Date -Year $anio -Month 9 -Day 19).Date) { $d18 = $d18.AddYears(1) }
+    $dias = [int]($d18 - $hoy).TotalDays
+
+    if ($dias -gt 1) {
+        $frase = "$cPaja" + "faltan " + "$cBlanco$dias$cPaja" + " d" + $iTilde + "as pal 18" + $reset
+    } elseif ($dias -eq 1) {
+        $frase = "$cPaja" + "ma" + $enie + "ana es el 18" + $reset
+    } elseif ($dias -eq 0) {
+        $frase = "$cRojo" + $admira + "VIVA CHILE!" + $reset
+    } else {
+        $frase = "$cPaja" + "sigue el carrete, es 19" + $reset
+    }
+
+    $banderita = "$cAzul$bloque$cBlanco$bloque$cRojo$bloque$reset"
+    $textos += "$banderita $frase"
+}
+
 # Recorremos de dos en dos filas: la de arriba pinta el texto, la de abajo el fondo
+$nLinea = 0
 for ($y = 0; $y -lt $grid.Count; $y += 2) {
     $filaSup = $grid[$y]
     $filaInf = $null
@@ -151,5 +206,11 @@ for ($y = 0; $y -lt $grid.Count; $y += 2) {
             $linea += "$e[38;2;$($sup[0]);$($sup[1]);$($sup[2])m$e[48;2;$($inf[0]);$($inf[1]);$($inf[2])m$arriba$reset"
         }
     }
+
+    # Cada linea del sprite ocupa exactamente $ancho celdas visibles, asi que
+    # el texto queda alineado sin tener que medir los codigos ANSI.
+    if ($nLinea -lt $textos.Count) { $linea += "  " + $textos[$nLinea] }
+    $nLinea++
+
     $linea
 }

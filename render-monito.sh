@@ -7,14 +7,26 @@
 #
 # Uso:  ./render-monito.sh                  -> uno al azar de los tres
 #       ./render-monito.sh huaso
-#       ./render-monito.sh volantin 2       -> segundo argumento = sangria
+#       ./render-monito.sh volantin --sangria 2
+#       ./render-monito.sh --banner --modelo "Opus 5"   -> con lineas del banner
 #
 # Compatible con bash 3.2 (el que trae macOS): sin arrays asociativos.
 
 set -u
 
-SPRITE="${1:-aleatorio}"
-SANGRIA="${2:-1}"
+SPRITE="aleatorio"
+SANGRIA=1
+BANNER=0
+MODELO=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --banner)  BANNER=1; shift ;;
+    --modelo)  MODELO="${2:-}"; shift 2 ;;
+    --sangria) SANGRIA="${2:-1}"; shift 2 ;;
+    *)         SPRITE="$1"; shift ;;
+  esac
+done
 
 if [ "$SPRITE" = "aleatorio" ]; then
   case $(( RANDOM % 3 )) in
@@ -61,8 +73,8 @@ EOF
 nnnnnnnnnnnnnnnnn
 ..ccccccccccccc..
 ..cc.ccccccc.cc..
-aaaaaabbbbbrrrrrr
-..aaaabbbbbrrrr..
+aabaaabbbbbbbbbbb
+..rrrrrrrrrrrrr..
 ....c.c...c.c....
 EOF
     ;;
@@ -92,8 +104,8 @@ EOF
 ppppppppppppppppp
 ..ccccccccccccc..
 ..cc.ccccccc.cc..
-aaaaaabbbbbrrrrrr
-..aaaabbbbbrrrr..
+aabaaabbbbbbbbbbb
+..rrrrrrrrrrrrr..
 ....c.c...c.c....
 EOF
     ;;
@@ -151,7 +163,69 @@ celda() {
   color_of "${fila:$col:1}"
 }
 
+# --- Lineas de texto al costado (solo con --banner) ---
+# El sprite tiene 8 filas = 4 lineas de terminal, y el banner de Claude Code
+# tiene 3 lineas de texto. La cuarta es la cuenta regresiva.
+TEXTOS=()
+if [ "$BANNER" -eq 1 ]; then
+  BLOQUE=$(printf '\xe2\x96\x88')   # bloque lleno, para la banderita
+  C_PAJA="${ESC}[38;2;217;164;65m"
+  C_AZUL="${ESC}[38;2;90;130;220m"
+  C_BLANCO="${ESC}[38;2;237;231;219m"
+  C_ROJO="${ESC}[38;2;225;80;90m"
+  C_TENUE="${ESC}[38;2;138;128;120m"
+
+  # Version real, si claude esta en el PATH
+  VERSION=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+  if [ -n "$VERSION" ]; then
+    TEXTOS[${#TEXTOS[@]}]="${C_BLANCO}Claude Code v${VERSION}${RESET}"
+  fi
+
+  # La linea del modelo la pasa Claude al invocar la skill: el script no
+  # tiene como saber el nombre bonito del modelo de la sesion.
+  if [ -n "$MODELO" ]; then
+    TEXTOS[${#TEXTOS[@]}]="${C_TENUE}${MODELO}${RESET}"
+  fi
+
+  TEXTOS[${#TEXTOS[@]}]="${C_TENUE}$(pwd)${RESET}"
+
+  # --- Cuenta regresiva al 18 ---
+  # date -d es GNU, date -j -f es BSD/macOS: probamos el primero y caemos al otro
+  epoch_de() {
+    if date -d "$1" +%s >/dev/null 2>&1; then
+      date -d "$1" +%s
+    else
+      date -j -f "%Y-%m-%d" "$1" +%s
+    fi
+  }
+
+  HOY=$(date +%Y-%m-%d)
+  ANIO=$(date +%Y)
+  HOY_S=$(epoch_de "$HOY")
+  D18_S=$(epoch_de "${ANIO}-09-18")
+  # Pasado el 19 ya miramos el dieciocho del proximo anio
+  D19_S=$(epoch_de "${ANIO}-09-19")
+  if [ "$HOY_S" -gt "$D19_S" ]; then
+    D18_S=$(epoch_de "$(( ANIO + 1 ))-09-18")
+  fi
+  DIAS=$(( (D18_S - HOY_S) / 86400 ))
+
+  if [ "$DIAS" -gt 1 ]; then
+    FRASE="${C_PAJA}faltan ${C_BLANCO}${DIAS}${C_PAJA} días pal 18${RESET}"
+  elif [ "$DIAS" -eq 1 ]; then
+    FRASE="${C_PAJA}mañana es el 18${RESET}"
+  elif [ "$DIAS" -eq 0 ]; then
+    FRASE="${C_ROJO}¡VIVA CHILE!${RESET}"
+  else
+    FRASE="${C_PAJA}sigue el carrete, es 19${RESET}"
+  fi
+
+  BANDERITA="${C_AZUL}${BLOQUE}${C_BLANCO}${BLOQUE}${C_ROJO}${BLOQUE}${RESET}"
+  TEXTOS[${#TEXTOS[@]}]="${BANDERITA} ${FRASE}"
+fi
+
 # Recorremos de dos en dos filas: la de arriba pinta el texto, la de abajo el fondo
+NLINEA=0
 y=0
 while [ $y -lt "$TOTAL" ]; do
   linea="$MARGEN"
@@ -171,6 +245,13 @@ while [ $y -lt "$TOTAL" ]; do
     fi
     x=$(( x + 1 ))
   done
+  # Cada linea del sprite ocupa exactamente $ANCHO celdas visibles, asi que
+  # el texto queda alineado sin tener que medir los codigos ANSI.
+  if [ "$NLINEA" -lt "${#TEXTOS[@]}" ]; then
+    linea="${linea}  ${TEXTOS[$NLINEA]}"
+  fi
+  NLINEA=$(( NLINEA + 1 ))
+
   printf '%s\n' "$linea"
   y=$(( y + 2 ))
 done

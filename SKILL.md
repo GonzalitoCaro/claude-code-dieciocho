@@ -11,22 +11,35 @@ autocontenida: se puede copiar a otro computador tal cual.
 
 ## Al invocarla sin instrucciones
 
-Dibuja un monito al azar y muestra el estado. Nada más — no instales ni
-cambies nada sin que el usuario lo pida.
+Dibuja un monito al azar con las líneas del banner al lado — versión, modelo,
+ruta y la cuenta regresiva al 18. Nada más: no instales ni cambies nada sin
+que el usuario lo pida.
 
 **Windows:**
 ```powershell
-& "<BASE>\render-monito.ps1"
+& "<BASE>\render-monito.ps1" -Banner -Modelo "<MODELO>"
 ```
 
 **macOS / Linux:**
 ```bash
-bash "<BASE>/render-monito.sh"
+bash "<BASE>/render-monito.sh" --banner --modelo "<MODELO>"
 ```
 
 `<BASE>` es el directorio base de esta skill, que Claude Code entrega al
 invocarla. **Nunca escribas rutas absolutas de un usuario en particular**: esta
 skill se comparte.
+
+`<MODELO>` es la línea del modelo tal como sale en el banner de arranque, por
+ejemplo `Opus 5 (1M context) with high effort · Claude Team`. El script no
+tiene cómo saberla — la sabes tú, que estás corriendo en esa sesión. Ármala con
+el modelo actual y, si no estás seguro del plan o del nivel de esfuerzo, pon
+solo el nombre del modelo o omite el parámetro: esa línea simplemente no sale.
+
+La versión y la ruta las saca el script solo. La cuenta regresiva se calcula
+contra el 18 de septiembre; pasado el 19 apunta al del año siguiente.
+
+Después de dibujar, no expliques el dibujo. Si el usuario quiere otro, vuelve a
+correrlo con `-Sprite` / el primer argumento.
 
 ## Los dibujos
 
@@ -37,7 +50,7 @@ blanca:
 | Sprite | Qué es |
 |---|---|
 | `huaso` | Chupalla negra y poncho azul con franja roja |
-| `bandera` | Chupalla negra y poncho en tres bandas verticales azul, blanco y rojo |
+| `bandera` | Chupalla negra y poncho con la bandera: cantón azul con estrella, blanco al lado, franja roja abajo |
 | `volantin` | El huaso más un volantín arriba a la derecha, con el hilo bajando al poncho |
 | `aleatorio` | Sortea entre los tres. Es el que corre por defecto |
 
@@ -48,7 +61,7 @@ Los tres existen también con chupalla de paja: `huaso-paja`, `bandera-paja`,
 & "<BASE>\render-monito.ps1" -Sprite volantin -Sangria 2
 ```
 ```bash
-bash "<BASE>/render-monito.sh" volantin 2
+bash "<BASE>/render-monito.sh" volantin --sangria 2
 ```
 
 ### Cómo está dibujado

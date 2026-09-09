@@ -7,8 +7,17 @@ del banner y pone el terminal en modo 18 de septiembre.
 /dieciocho
 ```
 
-Dibuja uno de tres monitos al azar — chupalla negra con cinta blanca, poncho, volantín —
-y opcionalmente cambia los verbos del spinner por chilenismos: en vez de
+Dibuja uno de tres monitos al azar — chupalla negra con cinta blanca, poncho, volantín — con
+las líneas del banner al lado y la cuenta regresiva al 18:
+
+```
+▀▀▀▀▀      Claude Code v2.1.266
+▀▀▀▀▀▀▀    Opus 5 (1M context) with high effort
+▀▀▀▀▀▀▀    ~/mi-proyecto
+ ▀▀▀ ▀▀    ███ faltan 9 días pal 18
+```
+
+Y opcionalmente cambia los verbos del spinner por chilenismos: en vez de
 *Bloviating…* te sale **Rayueleando…**, **Anticucheando…**, **Terremoteando…**
 
 ## Instalar
@@ -38,7 +47,7 @@ cuatro patitas — y le agregan sombrero y manta.
 | Sprite | Qué es |
 |---|---|
 | `huaso` | Chupalla negra y poncho azul con franja roja |
-| `bandera` | Chupalla negra y poncho en tres bandas verticales azul, blanco y rojo |
+| `bandera` | Chupalla negra y poncho con la bandera: cantón azul con estrella, blanco al lado y franja roja abajo |
 | `volantin` | El huaso con un volantín arriba a la derecha y el hilo bajando al poncho |
 
 Los tres existen también con chupalla de paja: `huaso-paja`, `bandera-paja`, `volantin-paja`.
@@ -47,10 +56,15 @@ Para dibujar uno específico, sin pasar por la skill:
 
 ```powershell
 & "$HOME\.claude\skills\dieciocho\render-monito.ps1" -Sprite volantin
+& "$HOME\.claude\skills\dieciocho\render-monito.ps1" -Banner -Modelo "Opus 5"
 ```
 ```bash
 bash ~/.claude/skills/dieciocho/render-monito.sh volantin
+bash ~/.claude/skills/dieciocho/render-monito.sh --banner --modelo "Opus 5"
 ```
+
+La versión y la ruta las saca el script solo; la línea del modelo se la pasa Claude al
+invocar la skill, porque el script no tiene cómo saber el nombre de la sesión.
 
 ## Cómo está dibujado
 
