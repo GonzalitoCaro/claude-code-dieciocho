@@ -37,12 +37,26 @@ es_windows() {
   return 1
 }
 
+# En macOS, /usr/bin/python3 existe siempre, pero sin las Command Line Tools es
+# un stub que abre un dialogo de instalacion al ejecutarlo. command -v lo da por
+# bueno. Asi que en Darwin, si el python3 que hay es ese stub y las CLT no estan
+# instaladas, lo damos por ausente y pasamos al siguiente motor.
+hay_python3() {
+  command -v python3 >/dev/null 2>&1 || return 1
+  if [ "$(uname -s 2>/dev/null)" = "Darwin" ]; then
+    case "$(command -v python3)" in
+      /usr/bin/python3) xcode-select -p >/dev/null 2>&1 || return 1 ;;
+    esac
+  fi
+  return 0
+}
+
 # Elige el motor. DIECIOCHO_MOTOR lo fuerza, para probar.
 MOTOR="${DIECIOCHO_MOTOR:-}"
 if [ -z "$MOTOR" ]; then
   if es_windows; then
     MOTOR=powershell
-  elif command -v python3 >/dev/null 2>&1; then
+  elif hay_python3; then
     MOTOR=python3
   elif command -v node >/dev/null 2>&1; then
     MOTOR=node

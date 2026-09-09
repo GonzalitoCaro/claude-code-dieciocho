@@ -53,7 +53,10 @@ medir_filas() {
         f=$(powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "$BASE/medir-filas.ps1" -ProcesoId "$CLAUDE_PID" 2>/dev/null | tr -cd '0-9')
       fi ;;
     *)
-      f=$(stty size </dev/tty 2>/dev/null | cut -d' ' -f1) ;;
+      # El 2>/dev/null de stty no basta: si /dev/tty no existe (contenedor, hook
+      # con stdin de tuberia) el error lo emite el SHELL al abrir el archivo, no
+      # stty. Por eso la redireccion envuelve al grupo completo.
+      f=$( { stty size </dev/tty; } 2>/dev/null | cut -d' ' -f1 ) ;;
   esac
   case "$f" in ''|*[!0-9]*) f="" ;; esac
   printf '%s' "$f"
