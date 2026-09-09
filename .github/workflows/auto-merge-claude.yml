@@ -1,0 +1,29 @@
+# Mergea solo los PR que abre Claude Code desde el celular o la web.
+#
+# Las sesiones en la nube no pueden pushear a main: el proxy de git las deja
+# pushear solo a su propia rama (claude/...). Este workflow cierra ese hueco:
+# cuando la sesion abre el PR, se mergea al toque con squash y se borra la rama.
+#
+# Para dejar un cambio en revision en vez de mergearlo, abrir el PR como draft.
+name: Auto-merge PR de Claude
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: >-
+      github.event.pull_request.draft == false &&
+      startsWith(github.event.pull_request.head.ref, 'claude/') &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Squash merge y borrar la rama
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr merge "${{ github.event.pull_request.number }}" --repo "${{ github.repository }}" --squash --delete-branch
