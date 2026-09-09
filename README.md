@@ -115,7 +115,7 @@ Agrega esto a `~/.claude/settings.json`:
 "hooks": {
   "SessionStart": [
     { "hooks": [ { "type": "command",
-        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File $HOME\.claude\skills\dieciocho\sessionstart-monito.ps1",
+        "command": "powershell -NoProfile -ExecutionPolicy Bypass -File $HOME\\.claude\\skills\\dieciocho\\sessionstart-monito.ps1",
         "timeout": 20 } ] }
   ]
 }
