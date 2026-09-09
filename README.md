@@ -50,10 +50,10 @@ corre en tu máquina.
 
 | | |
 |---|---|
-| **Cuándo corre** | En cada mensaje que escribes |
-| **Qué hace** | Busca la palabra "dieciocho" en tu prompt. Si no está, se apaga y no hace nada más |
+| **Cuándo corre** | En cada mensaje que escribes, y una vez al arrancar cada sesión |
+| **Qué hace** | En cada mensaje busca la palabra "dieciocho" en tu prompt; si no está, se apaga y no hace nada más. Al arrancar, revisa si ya prendió los verbos del spinner y, si no, los prende |
 | **Qué lee** | Tu prompt, la altura de la ventana de la terminal (en Windows se engancha a la consola de Claude Code para leerla, nada más), y de tu `settings.json` solo el modelo y el nivel de esfuerzo, para que el banner diga lo mismo que el de verdad |
-| **Qué escribe** | Nada |
+| **Qué escribe** | Una sola vez, la clave `spinnerVerbs` en tu `~/.claude/settings.json`, y una marca vacía `~/.claude/dieciocho-verbos.hecho` para no volver a tocarlo. Si ya tenías `spinnerVerbs`, no te los pisa. Si tu `settings.json` no es JSON válido, no lo toca |
 | **Qué manda por red** | Nada. No hay una sola llamada de red en el código |
 | **Cuánto demora** | ~120 ms cuando no calza. Por eso el filtro es un `grep` y no algo más pesado |
 
@@ -99,15 +99,17 @@ Si agregas uno, edítalo en los dos renderizadores (`.ps1` y `.sh`) con las mism
 
 ## Los verbos del spinner
 
-Están en `skills/dieciocho/verbos.json`. Son 28 y no se activan solos: copia ese objeto
-como la clave `spinnerVerbs` de tu `~/.claude/settings.json`.
+Están en `skills/dieciocho/verbos.json`. Son 28 y con el plugin se prenden solos la
+primera vez que arranca Claude Code: quedan como la clave `spinnerVerbs` de tu
+`~/.claude/settings.json`.
 
 ```json
 "spinnerVerbs": { "mode": "replace", "verbs": ["Dieciocheando", "Cuequeando", "..."] }
 ```
 
 `replace` deja solo los chilenos; `append` los mezcla con los originales. Se aplican al
-toque, sin reiniciar. Para apagarlos, saca la clave.
+toque, sin reiniciar. Para apagarlos, saca la clave, o dile a Claude "sácame los verbos":
+el plugin no la vuelve a poner. Si instalaste la skill a mano, sin plugin, pégala tú.
 
 ## Lo que no se puede
 

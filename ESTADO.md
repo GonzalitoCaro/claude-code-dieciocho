@@ -54,6 +54,35 @@ No volver a intentarlos:
 - **Sin emoji.** La bandera chilena se arma con dos indicadores regionales que Windows
   Terminal no compone: deja una `c` suelta. Para adornos, `★` y bloques de color.
 
+## Los verbos del spinner se prenden solos
+
+Un plugin no puede traer `spinnerVerbs`: Claude Code solo honra `agent` y
+`subagentStatusLine` desde el `settings.json` de un plugin, y no hay hook que cambie los
+verbos en caliente. Por eso `prender-verbos.sh` corre en `SessionStart` y escribe la clave
+en el `settings.json` del usuario una sola vez, con marca `~/.claude/dieciocho-verbos.hecho`
+para no repetirse. Reglas: no pisa una clave que ya exista, no toca un JSON inválido, y si
+el usuario saca la clave no la vuelve a poner.
+
+Trampas:
+
+- **En Windows el motor es siempre PowerShell.** `python3` puede ser el stub de la
+  Microsoft Store, que abre la tienda en vez de correr. En macOS y Linux: python3, node o
+  jq, lo que haya.
+- **Nunca llamar `TMP` (ni `TEMP`) a una variable de bash en Windows.** Están exportadas
+  por el sistema, así que asignarlas en el script cambia el entorno de los hijos, y
+  PowerShell crea esa ruta como su carpeta temporal al arrancar. Costó una hora: el archivo
+  de salida aparecía como carpeta y la escritura fallaba con "acceso denegado".
+- **Las rutas a PowerShell van por `cygpath -w`.** La conversión automática del bash de
+  Git se equivoca con rutas tipo `/tmp/...` y PowerShell escribe en cualquier parte.
+- **PowerShell no distingue mayúsculas en las variables.** Un `$verbos` local es el mismo
+  `[string]$Verbos` del `param`, y el objeto JSON se convierte a texto sin aviso: en el
+  settings quedaba `"@{mode=replace; verbs=System.Object[]}"`. Por eso es `$objVerbos`.
+- **`ConvertTo-Json` de PowerShell 5.1 corta a 2 niveles** si no se le pasa `-Depth`, y
+  escapa `< > & '` como `<`. Es JSON válido igual. Escribir con `UTF8Encoding($false)`
+  o queda con BOM.
+- Probado con los cuatro motores contra settings con BOM, hooks anidados, `ñ`, clave ya
+  existente, archivo inexistente y JSON roto.
+
 ## Cómo probar sin abrir una terminal nueva
 
 ```bash

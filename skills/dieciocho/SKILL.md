@@ -175,8 +175,14 @@ Aviso: Claude Code le pone a todo mensaje de hook una etiqueta del tipo
 
 ## Verbos del spinner
 
-Están en `verbos.json`, en esta misma carpeta. Para prenderlos, copia ese
-objeto como la clave `spinnerVerbs` de `~/.claude/settings.json`:
+Están en `verbos.json`, en esta misma carpeta. **Con el plugin instalado se
+prenden solos**: el hook `SessionStart` (`prender-verbos.sh`) copia ese objeto
+como la clave `spinnerVerbs` de `~/.claude/settings.json` la primera vez que
+arranca una sesión, y deja la marca `~/.claude/dieciocho-verbos.hecho` para no
+volver a tocar el archivo. Si el usuario ya tenía `spinnerVerbs`, no se pisa.
+
+Si la skill se copió a mano (sin plugin), el hook no corre y hay que ponerlos
+uno mismo:
 
 ```json
 "spinnerVerbs": { "mode": "replace", "verbs": ["Dieciocheando", "..."] }
@@ -185,7 +191,9 @@ objeto como la clave `spinnerVerbs` de `~/.claude/settings.json`:
 - `replace` → solo los chilenos.
 - `append` → mezclados con los de fábrica.
 
-Para apagarlos, saca la clave. Toman efecto al toque; no hace falta reiniciar.
+Para apagarlos, saca la clave de `settings.json` y listo: la marca queda, así
+que el hook no la vuelve a poner. Para volver a prenderlos, borra la marca o
+pega la clave de nuevo. Toman efecto al toque; no hace falta reiniciar.
 
 ## Huaso en la statusline (opcional)
 
