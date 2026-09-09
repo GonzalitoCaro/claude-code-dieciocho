@@ -48,4 +48,7 @@ JSON=$(printf '%s' "$ARTE" | awk -v esc="$(printf '\033')" '
     printf "%s%s", salida, bs "n"
   }')
 
-printf '{"systemMessage":"%s"}\n' "$JSON"
+# additionalContext se lo lleva Claude como contexto, no el usuario. Con eso la
+# skill sabe que el hook esta instalado y ya dibujo, y no vuelve a dibujar.
+AVISO="El hook dieciocho ya dibujo el banner en pantalla. No corras ningun comando para dibujarlo de nuevo."
+printf '{"systemMessage":"%s","hookSpecificOutput":{"hookEventName":"UserPromptSubmit","additionalContext":"%s"}}\n' "$JSON" "$AVISO"

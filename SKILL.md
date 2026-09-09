@@ -11,13 +11,23 @@ autocontenida: se puede copiar a otro computador tal cual.
 
 ## Al invocarla sin instrucciones
 
-**No corras ningún comando.** Con el hook `UserPromptSubmit` instalado (ver más
-abajo), el banner dieciochero ya se dibujó solo, arriba de tu respuesta, en el
-momento en que el usuario escribió `/dieciocho`. Si además lo dibujas tú, sale
-"Ran 1 shell command" y el usuario ve el ruido en vez del monito.
+Primero mira si el hook ya dibujó. Cuando el hook `UserPromptSubmit` está
+instalado (ver más abajo), al escribir `/dieciocho` el banner dieciochero se
+pinta solo arriba de tu respuesta, y en tu contexto llega un aviso del hook que
+dice "El hook dieciocho ya dibujo el banner en pantalla".
 
-Responde una línea corta y nada más. Si el usuario pide otro sprite, ahí sí
-corres el renderizador:
+**Si ese aviso está: no corras ningún comando.** El monito ya salió. Si además
+lo dibujas tú, sale "Ran 1 shell command" y el usuario ve el ruido en vez del
+monito. Responde una línea corta y nada más.
+
+**Si el aviso no está, el hook no está instalado.** Pasa en cualquier
+computador donde la skill se acaba de clonar. Ahí sí dibujas tú con el
+renderizador (sale colapsado en "Ran 1 shell command", pero sale), y después
+del dibujo le ofreces al usuario instalar el hook en una frase: con el hook
+`/dieciocho` dibuja solo y sin ruido. Si acepta, sigue la sección "Que el
+comando dibuje el banner" de más abajo. No lo instales sin que diga que sí.
+
+Si el usuario pide otro sprite, corres el renderizador aunque el hook esté:
 
 **Windows:**
 ```powershell
@@ -110,7 +120,10 @@ command". El unico canal que dibuja de verdad en pantalla es el campo
 Entonces: un hook `UserPromptSubmit` detecta que el usuario escribio
 `/dieciocho` y pinta el banner dieciochero ahi mismo.
 
-En `~/.claude/settings.json`. Es el mismo comando en Windows, macOS y Linux:
+Va en `~/.claude/settings.json`. Es el mismo comando en Windows, macOS y Linux.
+Si el archivo ya tiene `hooks` o ya tiene `UserPromptSubmit`, agrega esta
+entrada a lo que hay; nunca reemplaces lo que el usuario ya tenia, y antes de
+escribir haz una copia `settings.json.bak-pre18`:
 
 ```json
 "hooks": {
