@@ -1,25 +1,22 @@
 #!/usr/bin/env bash
 # Dibuja el monito dieciochero en el terminal. Version macOS / Linux.
 #
-# Cada celda de terminal es el doble de alta que de ancha, asi que un pixel
-# cuadrado se hace con medio bloque: color de texto arriba, color de fondo
-# abajo. Salen DOS filas de arte por linea de terminal.
+# GEOMETRIA: el bicho original de Claude Code usa un pixel por celda de
+# terminal, y una celda es el doble de alta que de ancha. Osea sus pixeles son
+# rectangulos parados, no cuadrados. Aca hacemos lo mismo -- una fila de arte
+# por linea -- para que el huaso tenga las mismas proporciones. (Con medio
+# bloque los pixeles salen cuadrados y el monito queda achatado a la mitad.)
 #
-# Uso:  ./render-monito.sh                  -> uno al azar de los tres
-#       ./render-monito.sh huaso
-#       ./render-monito.sh volantin --sangria 2
-#       ./render-monito.sh --banner --modelo "Opus 5"   -> con lineas del banner
+# Uso:  ./render-monito.sh                     -> uno al azar de los tres
+#       ./render-monito.sh volantin
+#       ./render-monito.sh --cuenta            -> con la cuenta regresiva
+#       ./render-monito.sh --banner --modelo "Opus 5"
 #
 # Compatible con bash 3.2 (el que trae macOS): sin arrays asociativos.
 
 set -u
 
-SPRITE="aleatorio"
-SANGRIA=1
-BANNER=0
-CUENTA=0
-MODELO=""
-
+SPRITE="aleatorio"; SANGRIA=1; BANNER=0; CUENTA=0; MODELO=""
 while [ $# -gt 0 ]; do
   case "$1" in
     --banner)  BANNER=1; shift ;;
@@ -39,6 +36,8 @@ if [ "$SPRITE" = "aleatorio" ]; then
 fi
 
 # --- Paleta (RGB) ---
+# El negro de la chupalla NO es negro puro: sobre el fondo oscuro del terminal
+# un negro real desaparece y solo se ve la cinta blanca flotando.
 color_of() {
   case "$1" in
     c) printf '231;72;86'   ;;  # coral, el color original del bicho
@@ -47,21 +46,20 @@ color_of() {
     r) printf '168;35;46'   ;;  # rojo
     b) printf '237;231;219' ;;  # lana
     h) printf '107;98;89'   ;;  # hilo del volantin
-    n) printf '28;26;24'    ;;  # negro de la chupalla
+    n) printf '53;48;43'    ;;  # negro de la chupalla
     w) printf '237;231;219' ;;  # cinta blanca
     *) printf ''            ;;  # fondo
   esac
 }
 
 # --- Sprites ---
-# Cabeza y patitas conservan la grilla original del bicho: 17 de ancho,
-# ojos en las columnas 4 y 12, cuatro patitas.
+# 17 columnas, ojos en las columnas 4 y 12, cuatro patitas: la grilla exacta
+# del bicho original, con dos filas de sombrero encima.
 sprite_rows() {
   case "$1" in
     huaso) cat <<'EOF'
 .....nnnnnnn.....
-.....wwwwwww.....
-nnnnnnnnnnnnnnnnn
+nnnnwwwwwwwwwnnnn
 ..ccccccccccccc..
 ..cc.ccccccc.cc..
 aaaaaaaaaaaaaaaaa
@@ -71,8 +69,7 @@ EOF
     ;;
     bandera) cat <<'EOF'
 .....nnnnnnn.....
-.....wwwwwww.....
-nnnnnnnnnnnnnnnnn
+nnnnwwwwwwwwwnnnn
 ..ccccccccccccc..
 ..cc.ccccccc.cc..
 aabaaabbbbbbbbbbb
@@ -80,12 +77,21 @@ aabaaabbbbbbbbbbb
 ....c.c...c.c....
 EOF
     ;;
+    volantin|volantin-paja) cat <<'EOF'
+.....ppppppp.......r.
+ppppppppppppppppp.rrr
+..ccccccccccccc....r.
+..cc.ccccccc.cc...h..
+aaaaaaaaaaaaaaaaah...
+..arrrrrrrrrrra......
+....c.c...c.c........
+EOF
+    ;;
     volantin-negro) cat <<'EOF'
-.....nnnnnnn......r..
-.....wwwwwww.....rrr.
-nnnnnnnnnnnnnnnnn.r..
-..ccccccccccccc...h..
-..cc.ccccccc.cc..h...
+.....nnnnnnn.......r.
+nnnnwwwwwwwwwnnnn.rrr
+..ccccccccccccc....r.
+..cc.ccccccc.cc...h..
 aaaaaaaaaaaaaaaaah...
 ..arrrrrrrrrrra......
 ....c.c...c.c........
@@ -111,16 +117,6 @@ aabaaabbbbbbbbbbb
 ....c.c...c.c....
 EOF
     ;;
-    volantin|volantin-paja) cat <<'EOF'
-.....ppppppp......r..
-ppppppppppppppppp.rrr
-..ccccccccccccc...r..
-..cc.ccccccc.cc...h..
-aaaaaaaaaaaaaaaaah...
-..arrrrrrrrrrra......
-....c.c...c.c........
-EOF
-    ;;
     *)
       echo "Sprite desconocido: $1" >&2
       echo "Opciones: huaso, bandera, volantin, huaso-paja, bandera-paja, volantin-negro, aleatorio" >&2
@@ -129,7 +125,7 @@ EOF
   esac
 }
 
-# Cargamos las filas en un array indexado (bash 3.2 no tiene mapfile)
+# bash 3.2 no tiene mapfile
 ROWS=()
 while IFS= read -r linea; do
   ROWS[${#ROWS[@]}]="$linea"
@@ -138,84 +134,57 @@ $(sprite_rows "$SPRITE")
 EOF
 
 TOTAL=${#ROWS[@]}
-if [ "$TOTAL" -eq 0 ]; then exit 1; fi
+[ "$TOTAL" -eq 0 ] && exit 1
 
-# Ancho maximo
 ANCHO=0
 i=0
 while [ $i -lt "$TOTAL" ]; do
   len=${#ROWS[$i]}
-  if [ "$len" -gt "$ANCHO" ]; then ANCHO=$len; fi
+  [ "$len" -gt "$ANCHO" ] && ANCHO=$len
   i=$(( i + 1 ))
 done
 
 ESC=$(printf '\033')
 RESET="${ESC}[0m"
-ARRIBA=$(printf '\xe2\x96\x80')   # medio bloque superior
-ABAJO=$(printf '\xe2\x96\x84')    # medio bloque inferior
-
+BLOQUE=$(printf '\xe2\x96\x88')     # bloque lleno: un pixel = una celda
+ESTRELLA=$(printf '\xe2\x98\x85')   # estrella de la bandera
 MARGEN=$(printf "%${SANGRIA}s" "")
 
-celda() {
-  # $1 = indice de fila, $2 = columna. Imprime el RGB o vacio.
-  idx=$1; col=$2
-  if [ "$idx" -ge "$TOTAL" ]; then printf ''; return; fi
-  fila="${ROWS[$idx]}"
-  if [ "$col" -ge "${#fila}" ]; then printf ''; return; fi
-  color_of "${fila:$col:1}"
-}
-
-# --- Lineas de texto al costado (solo con --banner) ---
-# El sprite tiene 8 filas = 4 lineas de terminal, y el banner de Claude Code
-# tiene 3 lineas de texto. La cuarta es la cuenta regresiva.
+# --- Texto al costado ---
+# TEXTOS es un array indexado por fila del sprite; "" significa sin texto.
 TEXTOS=()
+i=0
+while [ $i -lt "$TOTAL" ]; do TEXTOS[$i]=""; i=$(( i + 1 )); done
+
 if [ "$BANNER" -eq 1 ] || [ "$CUENTA" -eq 1 ]; then
-  BLOQUE=$(printf '\xe2\x96\x88')   # bloque lleno, para la banderita
   C_PAJA="${ESC}[38;2;217;164;65m"
-  C_AZUL="${ESC}[38;2;90;130;220m"
   C_BLANCO="${ESC}[38;2;237;231;219m"
   C_ROJO="${ESC}[38;2;225;80;90m"
   C_TENUE="${ESC}[38;2;138;128;120m"
 
-  # Con --banner replicamos las lineas del banner. Con --cuenta no: en el
-  # arranque el banner de verdad ya salio arriba y repetirlo se ve raro.
+  FILA_CUENTA=4
   if [ "$BANNER" -eq 1 ]; then
-    # Version real, si claude esta en el PATH
+    F=1
     VERSION=$(claude --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     if [ -n "$VERSION" ]; then
-      TEXTOS[${#TEXTOS[@]}]="${C_BLANCO}Claude Code v${VERSION}${RESET}"
+      TEXTOS[$F]="${C_BLANCO}Claude Code v${VERSION}${RESET}"; F=$(( F + 1 ))
     fi
-
-    # La linea del modelo la pasa Claude al invocar la skill: el script no
-    # tiene como saber el nombre bonito del modelo de la sesion.
     if [ -n "$MODELO" ]; then
-      TEXTOS[${#TEXTOS[@]}]="${C_TENUE}${MODELO}${RESET}"
+      TEXTOS[$F]="${C_TENUE}${MODELO}${RESET}"; F=$(( F + 1 ))
     fi
-
-    TEXTOS[${#TEXTOS[@]}]="${C_TENUE}$(pwd)${RESET}"
-  else
-    # Solo la cuenta: la dejamos a media altura del monito
-    TEXTOS[${#TEXTOS[@]}]=""
-    TEXTOS[${#TEXTOS[@]}]=""
+    TEXTOS[$F]="${C_TENUE}$(pwd)${RESET}"
+    FILA_CUENTA=$(( F + 2 ))
   fi
 
-  # --- Cuenta regresiva al 18 ---
   # date -d es GNU, date -j -f es BSD/macOS: probamos el primero y caemos al otro
   epoch_de() {
-    if date -d "$1" +%s >/dev/null 2>&1; then
-      date -d "$1" +%s
-    else
-      date -j -f "%Y-%m-%d" "$1" +%s
-    fi
+    if date -d "$1" +%s >/dev/null 2>&1; then date -d "$1" +%s
+    else date -j -f "%Y-%m-%d" "$1" +%s; fi
   }
-
-  HOY=$(date +%Y-%m-%d)
   ANIO=$(date +%Y)
-  HOY_S=$(epoch_de "$HOY")
+  HOY_S=$(epoch_de "$(date +%Y-%m-%d)")
   D18_S=$(epoch_de "${ANIO}-09-18")
-  # Pasado el 19 ya miramos el dieciocho del proximo anio
-  D19_S=$(epoch_de "${ANIO}-09-19")
-  if [ "$HOY_S" -gt "$D19_S" ]; then
+  if [ "$HOY_S" -gt "$(epoch_de "${ANIO}-09-19")" ]; then
     D18_S=$(epoch_de "$(( ANIO + 1 ))-09-18")
   fi
   DIAS=$(( (D18_S - HOY_S) / 86400 ))
@@ -230,38 +199,26 @@ if [ "$BANNER" -eq 1 ] || [ "$CUENTA" -eq 1 ]; then
     FRASE="${C_PAJA}sigue el carrete, es 19${RESET}"
   fi
 
-  BANDERITA="${C_AZUL}${BLOQUE}${C_BLANCO}${BLOQUE}${C_ROJO}${BLOQUE}${RESET}"
-  TEXTOS[${#TEXTOS[@]}]="${BANDERITA} ${FRASE}"
+  # Estrella sola: tres bloques azul/blanco/rojo se leen como Francia.
+  [ "$FILA_CUENTA" -lt "$TOTAL" ] && TEXTOS[$FILA_CUENTA]="${C_BLANCO}${ESTRELLA}${RESET} ${FRASE}"
 fi
 
-# Recorremos de dos en dos filas: la de arriba pinta el texto, la de abajo el fondo
-NLINEA=0
+# --- Dibujo: una fila de arte por linea de terminal ---
 y=0
 while [ $y -lt "$TOTAL" ]; do
+  fila="${ROWS[$y]}"
   linea="$MARGEN"
   x=0
   while [ $x -lt "$ANCHO" ]; do
-    sup=$(celda "$y" "$x")
-    inf=$(celda $(( y + 1 )) "$x")
-
-    if [ -z "$sup" ] && [ -z "$inf" ]; then
+    if [ "$x" -lt "${#fila}" ]; then col=$(color_of "${fila:$x:1}"); else col=""; fi
+    if [ -z "$col" ]; then
       linea="${linea} "
-    elif [ -n "$sup" ] && [ -z "$inf" ]; then
-      linea="${linea}${ESC}[38;2;${sup}m${ARRIBA}${RESET}"
-    elif [ -z "$sup" ] && [ -n "$inf" ]; then
-      linea="${linea}${ESC}[38;2;${inf}m${ABAJO}${RESET}"
     else
-      linea="${linea}${ESC}[38;2;${sup}m${ESC}[48;2;${inf}m${ARRIBA}${RESET}"
+      linea="${linea}${ESC}[38;2;${col}m${BLOQUE}${RESET}"
     fi
     x=$(( x + 1 ))
   done
-  # Cada linea del sprite ocupa exactamente $ANCHO celdas visibles, asi que
-  # el texto queda alineado sin tener que medir los codigos ANSI.
-  if [ "$NLINEA" -lt "${#TEXTOS[@]}" ] && [ -n "${TEXTOS[$NLINEA]}" ]; then
-    linea="${linea}  ${TEXTOS[$NLINEA]}"
-  fi
-  NLINEA=$(( NLINEA + 1 ))
-
+  [ -n "${TEXTOS[$y]}" ] && linea="${linea}  ${TEXTOS[$y]}"
   printf '%s\n' "$linea"
-  y=$(( y + 2 ))
+  y=$(( y + 1 ))
 done
