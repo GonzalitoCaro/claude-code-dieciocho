@@ -50,6 +50,25 @@ de Windows destroza los bloques y parece un error del hook que no existe.
 El `.ps1` no se puede correr en la nube. Si un cambio toca los dos renderizadores, se
 prueba el `.sh` y el `.ps1` se revisa a ojo, espejando línea por línea.
 
+## Probado en
+
+Verificado el 9-sep-2026 con contenedores, no a ojo:
+
+| Entorno | bash | awk | Resultado |
+|---|---|---|---|
+| Debian 13 | 5.2 | mawk 1.3.4 | pasa |
+| Debian 13 | 5.2 | GNU awk 5.2 | pasa |
+| Imagen `bash:3.2` (la version de bash de macOS) | 3.2.57 | busybox awk | pasa |
+| Git Bash en Windows 11 | 5.3 | gawk | pasa |
+| `date` estilo BSD, simulado con un shim que rechaza `-d` | — | — | pasa |
+
+Los tres `awk` importan: el escape del ESC para JSON se comporta distinto en cada uno,
+y por eso el backslash se fabrica con `sprintf("%c", 92)` en vez de escribirlo literal.
+
+**Lo que NO esta probado**: macOS de verdad. Se simulo la version de bash y el `date` de
+BSD, pero no el `awk` ni el `sed` de BSD sobre hardware real. Si alguien lo corre en un
+Mac, confirmar y anotarlo aca.
+
 ## Flujo de trabajo desde el celular
 
 Las sesiones que se abren desde la app de Claude corren en la nube sobre un clon del
