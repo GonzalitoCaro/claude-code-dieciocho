@@ -24,12 +24,17 @@ Es un plugin de Claude Code: `.claude-plugin/` trae los manifiestos,
 | `skills/dieciocho/medir-filas.ps1` | Solo Windows. Se engancha a la consola del proceso de Claude Code (`CLAUDE_PID`) y devuelve cuántas filas tiene la ventana. Cómo y por qué, en `ESTADO.md` |
 | `skills/dieciocho/gate-dieciocho.cmd` y `prompt-monito.ps1` | Reserva. `hooks.json` no los usa: en Windows los hooks también corren en el bash de Git. No tienen el relleno ni la medición del `.sh` |
 | `skills/dieciocho/verbos.json` | Los 28 verbos chilenos del spinner |
+| `imagenes/` | Una foto por combinacion, mas `generar.py` que las produce desde la salida real del renderizador |
 | `ESTADO.md` | Dónde quedó el trabajo, qué está probado y qué callejones ya se recorrieron. **Leerlo antes de retomar** |
 
 ## Reglas del código
 
-- Todo cambio a un sprite o a un color se hace en los dos renderizadores, con las mismas
-  letras. Si se toca uno solo, Windows y macOS quedan distintos.
+- Los sprites se arman por piezas: sombrero, cabeza, poncho, patitas y el volantin
+  opcional. Un poncho o un sombrero nuevo se agrega a su tabla en los dos
+  renderizadores y las combinaciones salen solas. Si se toca uno solo, Windows y macOS
+  quedan distintos.
+- Si cambia un sprite o un color, regenerar las fotos con `python imagenes/generar.py`
+  y commitearlas en el mismo cambio.
 - Los scripts son ASCII puros. Los glifos se generan por código (`[char]0xNNNN` en
   PowerShell, `printf '\xe2\x96\x80'` en sh). Nunca pegar el bloque literal.
 - Los `.sh` van siempre con LF, lo fuerza `.gitattributes`. Y tienen que correr en bash 3.2

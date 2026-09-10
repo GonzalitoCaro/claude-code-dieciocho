@@ -64,25 +64,30 @@ correrlo con `-Sprite` / el primer argumento.
 
 ## Los dibujos
 
-Tres sprites, todos sobre la grilla real del bicho original: 17 columnas, ojos
-en las columnas 4 y 12, cuatro patitas.
+Un monito se arma de tres piezas, y de ahi salen 12 combinaciones. Todas entran al
+sorteo, asi que `aleatorio` puede devolver cualquiera.
 
-| Sprite | Qué es |
+| Pieza | Opciones |
 |---|---|
-| `huaso` | Chupalla negra y poncho azul con franja roja |
-| `bandera` | Chupalla negra y poncho con la bandera: cantón azul con estrella, blanco al lado, franja roja abajo |
-| `volantin` | Chupalla de paja, con un volantín arriba a la derecha y el hilo bajando al poncho |
-| `aleatorio` | Sortea entre los tres. Es el que corre por defecto |
+| Poncho | `huaso` (azul con franja roja), `bandera` (canton azul con estrella, blanco, franja roja), `chamanto` (rayado, rojo sobre lana) |
+| Sombrero | `negra` (chupalla negra con cinta), `paja` (chupalla de paja) |
+| Volantin | se agrega con el sufijo `-volantin` |
 
-Variantes de sombrero: `huaso-paja` y `bandera-paja` con chupalla de paja, y
-`volantin-negro` con la chupalla negra.
+El nombre es `<poncho>-<sombrero>[-volantin]`. Por ejemplo `chamanto-paja-volantin`.
+
+Nombres viejos que siguen sirviendo: `huaso`, `bandera`, `chamanto`, `volantin`,
+`huaso-paja`, `bandera-paja`, `chamanto-paja`, `volantin-paja`, `volantin-negro`.
 
 ```powershell
-& "<BASE>\render-monito.ps1" -Sprite volantin -Sangria 2
+& "<BASE>ender-monito.ps1" -Sprite chamanto-paja-volantin -Sangria 2
 ```
 ```bash
-bash "<BASE>/render-monito.sh" volantin --sangria 2
+bash "<BASE>/render-monito.sh" chamanto-paja-volantin --sangria 2
 ```
+
+Las piezas estan definidas por separado en los dos renderizadores. Para agregar un
+poncho o un sombrero nuevo basta con sumarlo a su tabla, en los dos, y las
+combinaciones salen solas.
 
 ### Cómo está dibujado
 

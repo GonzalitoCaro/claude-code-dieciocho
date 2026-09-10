@@ -62,19 +62,37 @@ comentarios: si vas a dejar que algo corra en cada mensaje que escribes, revísa
 
 Para desinstalar: `/plugin uninstall dieciocho@claude-code-dieciocho`.
 
-## Los tres monitos
+## Los doce monitos
 
-Todos respetan la grilla del bicho original —17 columnas, ojos en las columnas 4 y 12,
-cuatro patitas— y le agregan sombrero y manta.
+Todos respetan la grilla del bicho original, 17 columnas, ojos en las columnas 4 y 12 y
+cuatro patitas. Lo que cambia es el sombrero, el poncho y si lleva volantin.
 
-| Sprite | Qué es |
-|---|---|
-| `huaso` | Chupalla negra y poncho azul con franja roja |
-| `bandera` | Chupalla negra y poncho con la bandera: cantón azul con estrella, blanco al lado y franja roja abajo |
-| `volantin` | Chupalla de paja, con un volantín arriba a la derecha y el hilo bajando al poncho |
+El nombre es `<poncho>-<sombrero>[-volantin]`, con poncho `huaso`, `bandera` o
+`chamanto`, y sombrero `negra` o `paja`. Las doce combinaciones entran al sorteo, asi
+que cada vez que escribes `/dieciocho` sale una distinta.
 
-Variantes de sombrero: `huaso-paja`, `bandera-paja` y `volantin-negro`. Para pedir uno en
-particular, dile a Claude "dame el del volantín".
+| | Nombre | Qué es |
+|---|---|---|
+| ![huaso-negra](imagenes/huaso-negra.png) | `huaso-negra` | chupalla negra con cinta, poncho azul con franja roja |
+| ![huaso-negra-volantin](imagenes/huaso-negra-volantin.png) | `huaso-negra-volantin` | chupalla negra con cinta, poncho azul con franja roja, con volantin |
+| ![huaso-paja](imagenes/huaso-paja.png) | `huaso-paja` | chupalla de paja, poncho azul con franja roja |
+| ![huaso-paja-volantin](imagenes/huaso-paja-volantin.png) | `huaso-paja-volantin` | chupalla de paja, poncho azul con franja roja, con volantin |
+| ![bandera-negra](imagenes/bandera-negra.png) | `bandera-negra` | chupalla negra con cinta, la bandera: canton azul con estrella, blanco y franja roja |
+| ![bandera-negra-volantin](imagenes/bandera-negra-volantin.png) | `bandera-negra-volantin` | chupalla negra con cinta, la bandera: canton azul con estrella, blanco y franja roja, con volantin |
+| ![bandera-paja](imagenes/bandera-paja.png) | `bandera-paja` | chupalla de paja, la bandera: canton azul con estrella, blanco y franja roja |
+| ![bandera-paja-volantin](imagenes/bandera-paja-volantin.png) | `bandera-paja-volantin` | chupalla de paja, la bandera: canton azul con estrella, blanco y franja roja, con volantin |
+| ![chamanto-negra](imagenes/chamanto-negra.png) | `chamanto-negra` | chupalla negra con cinta, chamanto rayado, rojo sobre lana |
+| ![chamanto-negra-volantin](imagenes/chamanto-negra-volantin.png) | `chamanto-negra-volantin` | chupalla negra con cinta, chamanto rayado, rojo sobre lana, con volantin |
+| ![chamanto-paja](imagenes/chamanto-paja.png) | `chamanto-paja` | chupalla de paja, chamanto rayado, rojo sobre lana |
+| ![chamanto-paja-volantin](imagenes/chamanto-paja-volantin.png) | `chamanto-paja-volantin` | chupalla de paja, chamanto rayado, rojo sobre lana, con volantin |
+
+Para pedir uno en particular, dile a Claude "dame el chamanto con volantin".
+
+Los nombres viejos siguen sirviendo: `huaso`, `bandera`, `volantin`, `huaso-paja`,
+`bandera-paja` y `volantin-negro`.
+
+Las fotos se generan desde la salida real del renderizador con
+`python imagenes/generar.py`, asi que no pueden quedar desfasadas del codigo.
 
 ## Cómo está dibujado
 

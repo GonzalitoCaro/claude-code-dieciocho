@@ -28,11 +28,16 @@ while [ $# -gt 0 ]; do
 done
 
 if [ "$SPRITE" = "aleatorio" ]; then
-  case $(( RANDOM % 3 )) in
-    0) SPRITE="huaso" ;;
-    1) SPRITE="bandera" ;;
-    *) SPRITE="volantin" ;;
-  esac
+  # Las 12 combinaciones: 3 ponchos x 2 sombreros x con o sin volantin.
+  TODOS="huaso-negra huaso-negra-volantin huaso-paja huaso-paja-volantin bandera-negra bandera-negra-volantin bandera-paja bandera-paja-volantin chamanto-negra chamanto-negra-volantin chamanto-paja chamanto-paja-volantin"
+  n=0
+  for x in $TODOS; do n=$(( n + 1 )); done
+  elegido=$(( RANDOM % n ))
+  i=0
+  for x in $TODOS; do
+    [ "$i" -eq "$elegido" ] && SPRITE="$x" && break
+    i=$(( i + 1 ))
+  done
 fi
 
 # --- Paleta (RGB) ---
@@ -55,74 +60,98 @@ color_of() {
 # --- Sprites ---
 # 17 columnas, ojos en las columnas 4 y 12, cuatro patitas: la grilla exacta
 # del bicho original, con dos filas de sombrero encima.
-sprite_rows() {
+# --- Sprites, armados por piezas ---
+# Un monito es sombrero + cabeza + poncho + patitas, y opcionalmente un volantin
+# pegado a la derecha. Armarlo por piezas en vez de escribir cada combinacion a
+# mano da las 12 solas, y evita que el .sh y el .ps1 se desalineen.
+#
+# El nombre es <poncho>-<sombrero>[-volantin]: huaso-negra, bandera-paja-volantin...
+# La cabeza y las patitas son la grilla exacta del bicho original: 17 columnas,
+# ojos en las columnas 4 y 12, cuatro patitas.
+
+sombrero_rows() {
   case "$1" in
-    huaso) cat <<'EOF'
-.....nnnnnnn.....
-nnnnwwwwwwwwwnnnn
-..ccccccccccccc..
-..cc.ccccccc.cc..
-aaaaaaaaaaaaaaaaa
-..arrrrrrrrrrra..
-....c.c...c.c....
-EOF
-    ;;
-    bandera) cat <<'EOF'
-.....nnnnnnn.....
-nnnnwwwwwwwwwnnnn
-..ccccccccccccc..
-..cc.ccccccc.cc..
-aabaaabbbbbbbbbbb
-..rrrrrrrrrrrrr..
-....c.c...c.c....
-EOF
-    ;;
-    volantin|volantin-paja) cat <<'EOF'
-.....ppppppp.......r.
-ppppppppppppppppp.rrr
-..ccccccccccccc....r.
-..cc.ccccccc.cc...h..
-aaaaaaaaaaaaaaaaah...
-..arrrrrrrrrrra......
-....c.c...c.c........
-EOF
-    ;;
-    volantin-negro) cat <<'EOF'
-.....nnnnnnn.......r.
-nnnnwwwwwwwwwnnnn.rrr
-..ccccccccccccc....r.
-..cc.ccccccc.cc...h..
-aaaaaaaaaaaaaaaaah...
-..arrrrrrrrrrra......
-....c.c...c.c........
-EOF
-    ;;
-    huaso-paja) cat <<'EOF'
-.....ppppppp.....
-ppppppppppppppppp
-..ccccccccccccc..
-..cc.ccccccc.cc..
-aaaaaaaaaaaaaaaaa
-..arrrrrrrrrrra..
-....c.c...c.c....
-EOF
-    ;;
-    bandera-paja) cat <<'EOF'
-.....ppppppp.....
-ppppppppppppppppp
-..ccccccccccccc..
-..cc.ccccccc.cc..
-aabaaabbbbbbbbbbb
-..rrrrrrrrrrrrr..
-....c.c...c.c....
-EOF
-    ;;
-    *)
-      echo "Sprite desconocido: $1" >&2
-      echo "Opciones: huaso, bandera, volantin, huaso-paja, bandera-paja, volantin-negro, aleatorio" >&2
-      exit 1
-    ;;
+    negra) printf '%s
+%s
+' '.....nnnnnnn.....' 'nnnnwwwwwwwwwnnnn' ;;
+    paja)  printf '%s
+%s
+' '.....ppppppp.....' 'ppppppppppppppppp' ;;
+    *)     return 1 ;;
   esac
+}
+
+poncho_rows() {
+  case "$1" in
+    huaso)    printf '%s
+%s
+' 'aaaaaaaaaaaaaaaaa' '..arrrrrrrrrrra..' ;;
+    bandera)  printf '%s
+%s
+' 'aabaaabbbbbbbbbbb' '..rrrrrrrrrrrrr..' ;;
+    chamanto) printf '%s
+%s
+' 'rrrrrrrrrrrrrrrrr' '..bbbbbbbbbbbbb..' ;;
+    *)        return 1 ;;
+  esac
+}
+
+# Las cuatro columnas que se pegan a la derecha, una por fila del monito.
+volantin_col() {
+  case "$1" in
+    0) printf '..r.' ;;
+    1) printf '.rrr' ;;
+    2) printf '..r.' ;;
+    3) printf '..h.' ;;
+    4) printf 'h...' ;;
+    *) printf '....' ;;
+  esac
+}
+
+sprite_rows() {
+  # Nombres viejos, para no romper a quien ya los usaba
+  case "$1" in
+    huaso)          set -- huaso-negra ;;
+    bandera)        set -- bandera-negra ;;
+    chamanto)       set -- chamanto-negra ;;
+    volantin)       set -- huaso-paja-volantin ;;
+    volantin-paja)  set -- huaso-paja-volantin ;;
+    volantin-negro) set -- huaso-negra-volantin ;;
+    huaso-paja)     set -- huaso-paja ;;
+    bandera-paja)   set -- bandera-paja ;;
+    chamanto-paja)  set -- chamanto-paja ;;
+  esac
+
+  PONCHO="${1%%-*}"
+  RESTO="${1#*-}"
+  CON_VOLANTIN=0
+  case "$RESTO" in
+    *-volantin) CON_VOLANTIN=1; SOMBRERO="${RESTO%-volantin}" ;;
+    *)          SOMBRERO="$RESTO" ;;
+  esac
+
+  CUERPO=$(
+    sombrero_rows "$SOMBRERO" || return 1
+    printf '%s
+%s
+' '..ccccccccccccc..' '..cc.ccccccc.cc..'
+    poncho_rows "$PONCHO" || return 1
+    printf '%s
+' '....c.c...c.c....'
+  ) || return 1
+
+  n=0
+  printf '%s
+' "$CUERPO" | while IFS= read -r fila; do
+    if [ "$CON_VOLANTIN" -eq 1 ]; then
+      printf '%s%s
+' "$fila" "$(volantin_col $n)"
+    else
+      printf '%s
+' "$fila"
+    fi
+    n=$(( n + 1 ))
+  done
 }
 
 # bash 3.2 no tiene mapfile

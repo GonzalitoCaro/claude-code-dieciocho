@@ -42,72 +42,71 @@ $paleta = @{
 # --- Sprites ---
 # 17 columnas, ojos en las columnas 4 y 12, cuatro patitas: la grilla exacta
 # del bicho original, con dos filas de sombrero encima.
-$sprites = @{
-    'huaso' = @(
-        '.....nnnnnnn.....',
-        'nnnnwwwwwwwwwnnnn',
-        '..ccccccccccccc..',
-        '..cc.ccccccc.cc..',
-        'aaaaaaaaaaaaaaaaa',
-        '..arrrrrrrrrrra..',
-        '....c.c...c.c....'
-    )
-    'bandera' = @(
-        '.....nnnnnnn.....',
-        'nnnnwwwwwwwwwnnnn',
-        '..ccccccccccccc..',
-        '..cc.ccccccc.cc..',
-        'aabaaabbbbbbbbbbb',
-        '..rrrrrrrrrrrrr..',
-        '....c.c...c.c....'
-    )
-    'volantin' = @(
-        '.....ppppppp.......r.',
-        'ppppppppppppppppp.rrr',
-        '..ccccccccccccc....r.',
-        '..cc.ccccccc.cc...h..',
-        'aaaaaaaaaaaaaaaaah...',
-        '..arrrrrrrrrrra......',
-        '....c.c...c.c........'
-    )
-    'huaso-paja' = @(
-        '.....ppppppp.....',
-        'ppppppppppppppppp',
-        '..ccccccccccccc..',
-        '..cc.ccccccc.cc..',
-        'aaaaaaaaaaaaaaaaa',
-        '..arrrrrrrrrrra..',
-        '....c.c...c.c....'
-    )
-    'bandera-paja' = @(
-        '.....ppppppp.....',
-        'ppppppppppppppppp',
-        '..ccccccccccccc..',
-        '..cc.ccccccc.cc..',
-        'aabaaabbbbbbbbbbb',
-        '..rrrrrrrrrrrrr..',
-        '....c.c...c.c....'
-    )
-    'volantin-negro' = @(
-        '.....nnnnnnn.......r.',
-        'nnnnwwwwwwwwwnnnn.rrr',
-        '..ccccccccccccc....r.',
-        '..cc.ccccccc.cc...h..',
-        'aaaaaaaaaaaaaaaaah...',
-        '..arrrrrrrrrrra......',
-        '....c.c...c.c........'
-    )
-}
-$sprites['volantin-paja'] = $sprites['volantin']
+# --- Sprites, armados por piezas ---
+# Un monito es sombrero + cabeza + poncho + patitas, y opcionalmente un volantin
+# pegado a la derecha. Armarlo por piezas en vez de escribir cada combinacion a
+# mano da las 12 solas, y evita que el .ps1 y el .sh se desalineen.
+#
+# El nombre es <poncho>-<sombrero>[-volantin]: huaso-negra, bandera-paja-volantin...
+# La cabeza y las patitas son la grilla exacta del bicho original: 17 columnas,
+# ojos en las columnas 4 y 12, cuatro patitas.
 
-if ($Sprite -eq "aleatorio") {
-    $Sprite = @('huaso','bandera','volantin') | Get-Random
+$sombreros = @{
+    'negra' = @('.....nnnnnnn.....', 'nnnnwwwwwwwwwnnnn')
+    'paja'  = @('.....ppppppp.....', 'ppppppppppppppppp')
 }
-if (-not $sprites.ContainsKey($Sprite)) {
-    Write-Error "Sprite desconocido: $Sprite. Opciones: $(($sprites.Keys | Sort-Object) -join ', ')"
+$ponchos = @{
+    'huaso'    = @('aaaaaaaaaaaaaaaaa', '..arrrrrrrrrrra..')
+    'bandera'  = @('aabaaabbbbbbbbbbb', '..rrrrrrrrrrrrr..')
+    'chamanto' = @('rrrrrrrrrrrrrrrrr', '..bbbbbbbbbbbbb..')
+}
+$cabeza  = @('..ccccccccccccc..', '..cc.ccccccc.cc..')
+$patitas = '....c.c...c.c....'
+# Las cuatro columnas que se pegan a la derecha, una por fila del monito
+$volantin = @('..r.', '.rrr', '..r.', '..h.', 'h...', '....', '....')
+
+# Nombres viejos, para no romper a quien ya los usaba
+$alias = @{
+    'huaso'          = 'huaso-negra'
+    'bandera'        = 'bandera-negra'
+    'chamanto'       = 'chamanto-negra'
+    'volantin'       = 'huaso-paja-volantin'
+    'volantin-paja'  = 'huaso-paja-volantin'
+    'volantin-negro' = 'huaso-negra-volantin'
+}
+
+# Las 12 combinaciones, que son tambien las del sorteo
+$todos = @()
+foreach ($po in @('huaso','bandera','chamanto')) {
+    foreach ($so in @('negra','paja')) {
+        $todos += "$po-$so"
+        $todos += "$po-$so-volantin"
+    }
+}
+
+if ($Sprite -eq "aleatorio") { $Sprite = $todos | Get-Random }
+if ($alias.ContainsKey($Sprite)) { $Sprite = $alias[$Sprite] }
+
+$partes = $Sprite -split '-'
+$conVolantin = ($partes.Count -ge 3 -and $partes[2] -eq 'volantin')
+$po = $partes[0]
+$so = if ($partes.Count -ge 2) { $partes[1] } else { '' }
+
+if (-not $ponchos.ContainsKey($po) -or -not $sombreros.ContainsKey($so)) {
+    Write-Error "Sprite desconocido: $Sprite. Opciones: $(($todos + $alias.Keys | Sort-Object) -join ', '), aleatorio"
     exit 1
 }
-$grid = $sprites[$Sprite]
+
+$grid = @()
+$grid += $sombreros[$so]
+$grid += $cabeza
+$grid += $ponchos[$po]
+$grid += $patitas
+if ($conVolantin) {
+    $conCola = @()
+    for ($i = 0; $i -lt $grid.Count; $i++) { $conCola += ($grid[$i] + $volantin[$i]) }
+    $grid = $conCola
+}
 
 # --- Glifos por codigo, para que este archivo quede ASCII puro ---
 $e       = [char]27
